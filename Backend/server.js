@@ -4,6 +4,8 @@ const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const dotenv = require('dotenv')
+const cookieParser = require('cookie-parser')
+
 dotenv.config();
 
 const { userRouter } = require('./routes/user')
@@ -14,6 +16,8 @@ const googleAuthRouter = require('./routes/googleAuth')
 const paymentRouter = require('./routes/payment')
 
 const app = express();
+app.use(cookieParser())
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))

@@ -24,15 +24,6 @@ googleAuthRouter.get('/google/callback',
         // console.log(user);
         // console.log(token);
 
-        if (token) {
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'lax',
-                maxAge: 24 * 60 * 60 * 1000
-            })
-        }
-
         // Redirect user based on role
         const role = req.user.role.toLowerCase();
 
@@ -42,10 +33,33 @@ googleAuthRouter.get('/google/callback',
         // Client URL(Frontend => React)
         const CLIENT_URL = "http://localhost:5173"
 
-        if (role === 'admin') return res.redirect(`${CLIENT_URL}/${role}/dashboard`);
-        if (role === 'coordinator') return res.redirect(`${CLIENT_URL}/${role}/dashboard`);
-        if (role === 'farmer') return res.redirect( `${CLIENT_URL}/${role}/dashboard`);
-        if (role === 'user') return res.redirect( `${CLIENT_URL}/${role}/home`);
+        if (role === 'admin') return res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        }).redirect(`${CLIENT_URL}/${role}/dashboard`);
+
+        if (role === 'coordinator') return res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        }).redirect(`${CLIENT_URL}/${role}/dashboard`);
+
+        if (role === 'farmer') return res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        }).redirect(`${CLIENT_URL}/${role}/dashboard`);
+
+        if (role === 'user') return res.cookie('token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        }).redirect(`${CLIENT_URL}/auth-success?user=true&role=${role}`);
     }
 );
 

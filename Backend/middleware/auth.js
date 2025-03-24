@@ -3,7 +3,9 @@ const { User, Admin, Coordinator, Farmer } = require('../models/db');
 
 async function userAuth(req, res, next) {
     try {
-        const token = req.header("token");
+        const token = req.cookies.token;
+        // console.log(token);
+        
         if (!token) {
             throw new Error('Authentication required');
         }
