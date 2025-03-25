@@ -111,10 +111,10 @@ adminRouter.post('/signout', (req, res) => {
     }
 })
 
-adminRouter.get('/admin/dashboard', adminAuth, (req, res)=> {
+adminRouter.get('/admin/dashboard', adminAuth, (req, res) => {
     res.json({
-        success:true,
-        message:"Admin login successfully"
+        success: true,
+        message: "Admin login successfully"
     })
 })
 
