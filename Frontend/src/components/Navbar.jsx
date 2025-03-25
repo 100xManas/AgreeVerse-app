@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Search, User, MoveRight } from 'lucide-react';
-import UserProfileCard from './UserProfileCard';
+import UserProfileCard from './UserProfile';
 import { AuthContext } from '../useContext/AuthContext';
 
 function Navbar() {

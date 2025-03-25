@@ -1,7 +1,7 @@
 import React from 'react';
 import { LogOut, ShoppingBag } from 'lucide-react';
 
-const UserProfileCard = ({ user, onLogout }) => {
+const UserProfile = ({ user, onLogout }) => {
   // User object should contain: photoURL, name, email
   return (
     <div className="bg-zinc-700 rounded-lg shadow-lg w-64 overflow-hidden">
@@ -51,4 +51,4 @@ const UserProfileCard = ({ user, onLogout }) => {
   );
 };
 
-export default UserProfileCard;
+export default UserProfile;
