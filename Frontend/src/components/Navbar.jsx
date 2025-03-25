@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, User, MoveRight } from 'lucide-react';
-import UserProfileCard from './UserProfile';
+import UserProfile from './UserProfile';
 import { AuthContext } from '../useContext/AuthContext';
 
 function Navbar() {
@@ -8,6 +9,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -24,7 +26,19 @@ function Navbar() {
 
   const { user } = useContext(AuthContext);
   console.log(user);
-  
+
+  const handleMouseEnter = () => {
+    console.log("Hovered on:", user.name);
+    setShowProfile(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowProfile(false);
+  };
+
+  const location = useLocation()
+  const currRoute = location.pathname
+  console.log(currRoute);
 
   return (
     <header className="w-full bg-zinc-700 border-b border-zinc-600 py-4 px-4 md:px-8 flex items-center justify-between flex-wrap gap-4 lg:px-16 lg:flex-nowrap lg:space-x-8">
@@ -127,41 +141,65 @@ function Navbar() {
       </div>
 
       {/* User Icons (Visible on Desktop Only) */}
-      <div className="hidden lg:flex items-center space-x-5 relative">
-        <div
-          onMouseEnter={() => setIsHover(true)}
-          onMouseLeave={() => setIsHover(false)}
-          className="relative"
-        >
-          <a
-            href="#user"
-            className="flex flex-col items-center group hover:text-[#F0B90B] transition-colors"
-          >
-            <User
-              size={25}
-              className="text-gray-100 mb-1 group-hover:text-[#F0B90B] transition-colors"
-            />
-          </a>
+      <div className=''>
+        {
+          currRoute === '/user/home' && user ? (
+            <div className='relative'>
+              <div
+                className='h-10 w-10 rounded-full overflow-hidden cursor-pointer'
+                onMouseEnter={() => setShowProfile(true)}
+                onMouseLeave={() => setShowProfile(false)}
+              >
+                <img className='w-full h-full object-center' src={user.googleProfilePicture} alt="User" />
+              </div>
 
-          {/* Popup */}
-          {isHover && (
-            <div className="absolute top-full transform -translate-x-1/2 w-48 bg-zinc-700 text-white rounded-lg shadow-lg py-3 mt-1 z-50">
-              <a href="/signup" className="flex items-center justify-between px-4 py-2 text-white hover:text-[#F0B90B] hover:px-4.5 transition duration-150 text-sm">
-                <span className="font-semibold">Signup</span>
-                <MoveRight />
-              </a>
-
-              <a href="/signin" className="flex mt-1 items-center justify-between px-4 py-2 text-white hover:text-[#F0B90B] hover:px-4.5 transition duration-150 text-sm">
-                <span className="font-semibold">Signin</span>
-                <MoveRight />
-              </a>
+              {showProfile && (
+                <div
+                  className="absolute top-[calc(100%+4px)] left-1/2 transform -translate-x-1/2 w-60 bg-gray-800 text-white rounded-lg shadow-lg z-50 -ml-10"
+                  onMouseEnter={() => setShowProfile(true)}
+                  onMouseLeave={() => setShowProfile(false)}
+                >
+                  <UserProfile user={user} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          ) : (
+            <div div className="hidden lg:flex items-center space-x-5 relative">
+              <div
+                onMouseEnter={() => setIsHover(true)}
+                onMouseLeave={() => setIsHover(false)}
+                className="relative"
+              >
+                <a
+                  href="#user"
+                  className="flex flex-col items-center group hover:text-[#F0B90B] transition-colors"
+                >
+                  <User
+                    size={25}
+                    className="text-gray-100 mb-1 group-hover:text-[#F0B90B] transition-colors"
+                  />
+                </a>
 
-      {/* <UserProfileCard /> */}
-    </header>
+                {/* Popup */}
+                {isHover && (
+                  <div className="absolute top-full transform -translate-x-1/2 w-42 bg-zinc-700 text-white rounded-lg shadow-lg py-2 ml-1 z-50">
+                    <a href="/signup" className="flex items-center justify-between px-4 py-2 text-white hover:text-[#F0B90B] hover:px-4.5 transition duration-150 text-sm">
+                      <span className="font-semibold">Signup</span>
+                      <MoveRight />
+                    </a>
+
+                    <a href="/signin" className="flex mt-1 items-center justify-between px-4 py-2 text-white hover:text-[#F0B90B] hover:px-4.5 transition duration-150 text-sm">
+                      <span className="font-semibold">Signin</span>
+                      <MoveRight />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </header >
   );
 }
 

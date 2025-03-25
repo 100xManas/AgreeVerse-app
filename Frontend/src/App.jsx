@@ -19,10 +19,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/user/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
 
+        <Route path="/user/home" element={<Home />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
 
         <Route path="/user/dashboard" element={<UserDashboard />} />
