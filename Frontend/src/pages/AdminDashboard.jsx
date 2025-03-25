@@ -6,9 +6,7 @@ function AdminDashboard() {
       AdminDashboard
       {/* 
       
-      1 -> add farmer 
-      2 -> add co-ordinator
-      3 -> 
+     
 
       */}
     </div>
