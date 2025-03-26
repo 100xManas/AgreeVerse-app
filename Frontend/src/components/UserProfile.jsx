@@ -3,9 +3,8 @@ import { LogOut, ShoppingBag } from 'lucide-react';
 
 const UserProfile = ({ user, onLogout }) => {
   
-  console.log(user);
+  // console.log(user);
   
-
   return (
     <div className="bg-zinc-700 rounded-lg shadow-lg w-[100%] overflow-hidden">
       {/* User Profile Section */}
