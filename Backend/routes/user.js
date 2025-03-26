@@ -202,7 +202,7 @@ userRouter.get('/user-purchases/:userId', userAuth, async (req, res) => {
 
     try {
         // Find all purchase documents for this user
-        const purchases = await UserPurchasedCrop.find({ userId }).populate('purchasedCrops.cropId');
+        const purchases = await userPurchasedCropModel.find({ userId }).populate('purchasedCrops.cropId');
 
         if (purchases.length === 0) {
             return res.status(200).json({

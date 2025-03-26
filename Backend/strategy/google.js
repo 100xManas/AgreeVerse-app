@@ -15,8 +15,9 @@ passport.use(new GoogleStrategy(
     },
     async (req, accessToken, refreshToken, profile, done) => {
 
-        const { id, displayName, emails, picture } = profile;
+        const { id, displayName, emails, photos } = profile;
         const email = emails[0].value;
+        const picture = photos?.[0]?.value || null
 
         try {
             // Check if user exists in any role
