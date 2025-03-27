@@ -5,19 +5,21 @@ import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 
 export default function Signup() {
     const [passwordShown, setPasswordShown] = useState(false);
-    const [username, setUsername] = useState('');
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
+    const [coordinatorId, setCoordinatorId] = useState('');
     const [showRoleModal, setShowRoleModal] = useState(false);
+    const [showCoordinatorModal, setShowCoordinatorModal] = useState(false);
     const [googleSignup, setGoogleSignup] = useState(false);
 
     const navigate = useNavigate();
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
-        
+
         setShowRoleModal(true);
         setGoogleSignup(false);
     };
@@ -26,29 +28,58 @@ export default function Signup() {
         setRole(selectedRole);
         setShowRoleModal(false);
 
+        if (selectedRole === 'farmer') {
+            // Show Coordinator ID modal for farmers
+            setShowCoordinatorModal(true);
+        } else {
+            // Proceed with signup for other roles
+            proceedWithSignup(selectedRole);
+        }
+    };
+
+    const handleCoordinatorIdSubmit = () => {
+        if (!coordinatorId.trim()) {
+            alert('Coordinator ID is required for farmers');
+            return;
+        }
+
+        setShowCoordinatorModal(false);
+        proceedWithSignup(role);
+    };
+
+    const proceedWithSignup = async (selectedRole) => {
         if (googleSignup) {
-            // Redirect for Google OAuth with role
-            window.location.href = `http://localhost:8080/auth/google?role=${selectedRole}`;
+            // Redirect for Google OAuth with role and coordinator ID (if applicable)
+            const redirectUrl = selectedRole === 'farmer'
+                ? `http://localhost:8080/auth/google?role=${selectedRole}&coordinatorId=${coordinatorId}`
+                : `http://localhost:8080/auth/google?role=${selectedRole}`;
+            window.location.href = redirectUrl;
         } else {
             // Normal signup process
             const newUser = {
-                username,
+                name,
                 email,
                 phone,
                 password,
                 role: selectedRole,
+                ...(selectedRole === 'farmer' && { coordinatorId })
             };
-            // console.log(newUser);
-            
+
             try {
                 const res = await axios.post(`http://localhost:8080/api/v1/${selectedRole}/signup`, newUser);
                 if (res.data.success) {
-                    console.log(res.data.message);
+                    alert(res.data.message);
                     setTimeout(() => {
                         navigate('/signin');
                     }, 1000);
                 }
             } catch (error) {
+                console.log(error.response);
+                
+                if (error.response && error.response.status === 409) {
+                    alert(error.response.data);
+                }
+                alert("Something went wrong!")
                 console.error("Signup error:", error);
             }
         }
@@ -65,9 +96,9 @@ export default function Signup() {
                     <h3 className="text-3xl font-medium text-white mb-8 text-center">Create an account</h3>
 
                     <form className="space-y-2" method="POST" onSubmit={onSubmitHandler}>
-                        <input id="username" type="text" name="username" placeholder="Enter Your Username"
+                        <input id="name" type="text" name="username" placeholder="Enter Your Name"
                             className="bg-gray-700 text-white mt-2 w-full rounded-lg px-2 py-3 text-md focus:ring-2 focus:ring-[#FF9119]/50 focus:outline-none"
-                            onChange={(e) => setUsername(e.target.value)} required />
+                            onChange={(e) => setName(e.target.value)} required />
 
                         <input id="email" type="email" name="email" placeholder="Enter Your Email"
                             className="bg-gray-700 text-white mt-2 w-full rounded-lg px-2 py-3 text-md focus:ring-2 focus:ring-[#FF9119]/50 focus:outline-none"
@@ -88,7 +119,7 @@ export default function Signup() {
                         </div>
 
                         <button type="submit"
-                            className="w-full text-black font-medium py-2.5 rounded-lg bg-[#FF9119] hover:bg-transparent hover:border-2 hover:border-[#FF9119] border-2 border-[#FF9119] hover:text-white focus:ring-2 focus:outline-none">
+                            className="w-full text-black cursor-pointer transition ease-in-out duration-300 font-medium py-2.5 rounded-lg bg-[#FF9119] hover:bg-transparent hover:border-2 hover:border-[#FF9119] border-2 border-[#FF9119] hover:text-white focus:ring-2 focus:outline-none">
                             Sign Up
                         </button>
 
@@ -111,7 +142,7 @@ export default function Signup() {
                                 alt="Google"
                                 className="h-5 w-5"
                             />
-                            Sign Up with Google
+                            Continue with Google
                         </button>
 
                     </form>
@@ -139,6 +170,42 @@ export default function Signup() {
                             <button onClick={() => handleRoleSelection("user")}
                                 className="py-2.5 px-5 hover:cursor-pointer bg-red-500 text-white rounded hover:bg-red-600">
                                 User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Coordinator ID Modal for Farmers */}
+            {showCoordinatorModal && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex justify-center items-center">
+                    <div className="bg-white p-8 rounded-lg shadow-lg text-center w-96">
+                        <h3 className="text-lg font-semibold mb-4">Enter Coordinator ID</h3>
+                        <p className="text-sm text-gray-600 mb-4">Farmers must provide a Coordinator ID to sign up.</p>
+
+                        <input
+                            type="text"
+                            value={coordinatorId}
+                            onChange={(e) => setCoordinatorId(e.target.value)}
+                            placeholder="Enter Coordinator ID"
+                            className="w-full px-3 py-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#FF9119]/50"
+                        />
+
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                onClick={() => {
+                                    setShowCoordinatorModal(false);
+                                    setShowRoleModal(true);
+                                }}
+                                className="px-4 py-2 cursor-pointer bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCoordinatorIdSubmit}
+                                className="px-4 cursor-pointer py-2 bg-[#FF9119] text-white rounded-lg hover:bg-orange-600"
+                            >
+                                Submit
                             </button>
                         </div>
                     </div>
