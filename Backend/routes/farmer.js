@@ -1,5 +1,6 @@
 const express = require('express')
 const { z, number } = require('zod')
+const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 const farmerRouter = express.Router()
 
@@ -8,22 +9,34 @@ dotenv.config()
 const { farmerAuth } = require('../middleware/auth')
 const { Farmer, cropModel } = require('../models/db')
 
-
 farmerRouter.post('/signup', async (req, res) => {
-
     const userSignupRequiredBody = z.object({
         name: z.string(),
         email: z.string().email(),
-        phoneNo: z.string().transform(data => Number(data)),
-        password: z.string().min(6, { message: "Password must be at least 6 characters long." })
+        phone: z.string().transform(data => Number(data)),
+        password: z.string().min(6, { message: "Password must be at least 6 characters long." }),
+        coordinatorId: z.string()
     })
 
     const parsedData = userSignupRequiredBody.safeParse(req.body)
 
-    try {
-        const { name, email, phoneNo, password } = parsedData.data;
+    // Add this validation check
+    if (!parsedData.success) {
+        return res.status(400).json({
+            success: false,
+            errors: parsedData.error.errors
+        });
+    }
 
-        const exitingFarmer = await Farmer.findOne({ phoneNo, email })
+    console.log(parsedData.data);
+    
+
+    try {
+        const { name, email, phone, password, coordinatorId } = parsedData.data;
+
+        const exitingFarmer = await Farmer.findOne({
+            $or: [{ phone }, { email }]
+        })
 
         if (exitingFarmer) return res.status(409).send("Farmer already exits")
 
@@ -32,8 +45,9 @@ farmerRouter.post('/signup', async (req, res) => {
         const newFarmer = await Farmer.create({
             name,
             email,
-            phoneNo,
-            password: hash
+            phone,
+            password: hash,
+            coordinatorId
         })
 
         if (newFarmer) {
