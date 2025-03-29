@@ -1,5 +1,4 @@
 const passport = require('passport');
-const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { Admin, Coordinator, Farmer, User } = require('../models/db');
@@ -14,34 +13,49 @@ passport.use(new GoogleStrategy(
         passReqToCallback: true, // Allow access to request
     },
     async (req, accessToken, refreshToken, profile, done) => {
-
-        const { id, displayName, emails, photos } = profile;
-        const email = emails[0].value;
-        const picture = photos?.[0]?.value || null
-
         try {
-            // Check if user exists in any role
-            let user = await Admin.findOne({ email }) ||
-                await Coordinator.findOne({ email }) ||
-                await Farmer.findOne({ email }) ||
-                await User.findOne({ email });
+            const { id, displayName, emails, photos } = profile;
+            const email = emails[0].value;
+            const picture = photos?.[0]?.value || null
 
-            if (user) {
-                // Update existing user if needed (merge profile information)
-                user.name = displayName || user.name;
-                user.googleId = id;
-                await user.save();
-                return done(null, user); // Return existing (updated) user
-            }
+            // Default values
+            let role = "user";
+            let coordinatorId = null;
+            let adminId = null;
 
-            // Retrieve the role from state
-            let role = "user"; // Default role
-
+            // Check for state in query
             if (req.query.state) {
-                const state = JSON.parse(req.query.state);
-                if (state.role) role = state.role; // Assign role from frontend
+                try {
+                    const state = JSON.parse(req.query.state);
+                    role = state.role || "user";
+                    coordinatorId = state.coordinatorId;
+                    adminId = state.adminId;
+                } catch (error) {
+                    console.error('Error parsing state:', error);
+                }
             }
 
+            // Check if user exists in any collection
+            const adminUser = await Admin.findOne({ email });
+            const coordinatorUser = await Coordinator.findOne({ email });
+            const farmerUser = await Farmer.findOne({ email });
+            const generalUser = await User.findOne({ email });
+
+            // Determine which collection the user exists in
+            if (adminUser) {
+                return done(null, false, { message: 'User already exists in Admin collection' });
+            }
+            if (coordinatorUser) {
+                return done(null, false, { message: 'User already exists in Coordinator collection' });
+            }
+            if (farmerUser) {
+                return done(null, false, { message: 'User already exists in Farmer collection' });
+            }
+            if (generalUser) {
+                return done(null, false, { message: 'User already exists in User collection' });
+            }
+
+            // If no existing user, create new user
             const newUser = {
                 name: displayName,
                 email: email,
@@ -50,7 +64,18 @@ passport.use(new GoogleStrategy(
                 role,
             };
 
-            // Store user in the correct collection based on role
+            // Add coordinatorId for new farmers
+            if (role === 'farmer' && coordinatorId) {
+                newUser.coordinatorId = coordinatorId;
+            }
+
+            // Add adminId for new coordinators
+            if (role === 'coordinator' && adminId) {
+                newUser.adminId = adminId;
+            }
+
+            // Create user in appropriate collection
+            let user;
             if (role === 'admin') user = await Admin.create(newUser);
             else if (role === 'coordinator') user = await Coordinator.create(newUser);
             else if (role === 'farmer') user = await Farmer.create(newUser);

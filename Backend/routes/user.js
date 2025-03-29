@@ -9,9 +9,9 @@ const { User, cropModel, userPurchasedCropModel } = require('../models/db');
 userRouter.post('/signup', async (req, res) => {
 
     const userSignupRequiredBody = z.object({
-        username: z.string(), 
+        username: z.string(),
         email: z.string().email(),
-        phone: z.string(),  
+        phone: z.string(),
         password: z.string(),
         role: z.string()
     });
@@ -30,7 +30,7 @@ userRouter.post('/signup', async (req, res) => {
         const hash = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
-            name:username,
+            name: username,
             email,
             phone,
             password: hash,
@@ -118,7 +118,7 @@ userRouter.get('/dashboard', userAuth, (req, res) => {
     res.json({
         success: true,
         message: "User login successfully",
-        user:req.user,
+        user: req.user,
     })
 })
 

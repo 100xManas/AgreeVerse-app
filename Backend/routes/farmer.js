@@ -29,7 +29,7 @@ farmerRouter.post('/signup', async (req, res) => {
     }
 
     console.log(parsedData.data);
-    
+
 
     try {
         const { name, email, phone, password, coordinatorId } = parsedData.data;
@@ -128,10 +128,11 @@ farmerRouter.post('/signout', (req, res) => {
 })
 
 
-farmerRouter.get('/farmer/dashboard', farmerAuth, (req, res) => {
+farmerRouter.get('/dashboard', farmerAuth, (req, res) => {
     res.json({
         success: true,
-        message: "Farmer login successfully"
+        message: "Farmer login successfully",
+        user: req.farmer,
     })
 })
 
