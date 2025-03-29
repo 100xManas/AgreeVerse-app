@@ -8,7 +8,7 @@ const UserProfile = ({ user, onLogout }) => {
   return (
     <div className="bg-zinc-700 rounded-lg shadow-lg w-[100%] overflow-hidden">
       {/* User Profile Section */}
-      <div className="p-4 flex items-center gap-3">
+      <div className="p-1.5 flex items-center gap-3">
         <img
           src={user?.googleProfilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
           alt="User profile"

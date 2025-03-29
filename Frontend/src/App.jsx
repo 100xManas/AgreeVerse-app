@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import AuthSuccess from "./components/AuthSuccess";
+import AuthFailure from "./components/AuthFailure";
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
 
         <Route path="/user/home" element={<Home />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
+        <Route path="/auth-failure" element={<AuthFailure />} />
 
         <Route path="/user/dashboard" element={<UserDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

@@ -11,10 +11,15 @@ export const AuthProvider = ({ children }) => {
 
     const isAuthenticated = !!user; // Derived authentication state
 
-    // Fetch user details (only when called explicitly after login/signup)
-    const fetchUserDetails = async () => {
+    // Fetch user details based on role
+    const fetchUserDetails = async (role) => {
+        if (!role) {
+            console.error("Role is missing. Cannot fetch user details.");
+            return;
+        }
+
         try {
-            const response = await axios.get("http://localhost:8080/api/v1/user/dashboard", {
+            const response = await axios.get(`http://localhost:8080/api/v1/${role}/dashboard`, {
                 withCredentials: true,
             });
 
@@ -26,7 +31,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem("user");
             }
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error(`Error fetching ${role} user data:`, error);
             setUser(null);
             localStorage.removeItem("user");
         }

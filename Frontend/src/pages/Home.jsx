@@ -58,7 +58,7 @@ function Home() {
           <div className='flex items-center justify-between flex-wrap px-10'>
             {
               products.map((item, index) => (
-                <Link to={`/product/${item.id}`}>
+                <Link to={`/product/${item.id}`} key={index}>
                   <ProductCard product={item} key={index} />
                 </Link>
               ))

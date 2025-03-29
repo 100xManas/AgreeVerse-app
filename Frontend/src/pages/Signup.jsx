@@ -11,8 +11,10 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
     const [coordinatorId, setCoordinatorId] = useState('');
+    const [adminId, setAdminId] = useState('');
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [showCoordinatorModal, setShowCoordinatorModal] = useState(false);
+    const [showAdminIdModal, setShowAdminIdModal] = useState(false);
     const [googleSignup, setGoogleSignup] = useState(false);
 
     const navigate = useNavigate();
@@ -31,6 +33,9 @@ export default function Signup() {
         if (selectedRole === 'farmer') {
             // Show Coordinator ID modal for farmers
             setShowCoordinatorModal(true);
+        } else if (selectedRole === 'coordinator') {
+            // Show Admin ID modal for coordinators
+            setShowAdminIdModal(true);
         } else {
             // Proceed with signup for other roles
             proceedWithSignup(selectedRole);
@@ -47,12 +52,27 @@ export default function Signup() {
         proceedWithSignup(role);
     };
 
+    const handleAdminIdSubmit = () => {
+        if (!adminId.trim()) {
+            alert('Admin ID is required for coordinators');
+            return;
+        }
+
+        setShowAdminIdModal(false);
+        proceedWithSignup(role);
+    };
+
     const proceedWithSignup = async (selectedRole) => {
         if (googleSignup) {
-            // Redirect for Google OAuth with role and coordinator ID (if applicable)
-            const redirectUrl = selectedRole === 'farmer'
-                ? `http://localhost:8080/auth/google?role=${selectedRole}&coordinatorId=${coordinatorId}`
-                : `http://localhost:8080/auth/google?role=${selectedRole}`;
+            // Redirect for Google OAuth with role and IDs (if applicable)
+            let redirectUrl = `http://localhost:8080/auth/google?role=${selectedRole}`;
+            
+            if (selectedRole === 'farmer') {
+                redirectUrl += `&coordinatorId=${coordinatorId}`;
+            } else if (selectedRole === 'coordinator') {
+                redirectUrl += `&adminId=${adminId}`;
+            }
+            
             window.location.href = redirectUrl;
         } else {
             // Normal signup process
@@ -62,13 +82,15 @@ export default function Signup() {
                 phone,
                 password,
                 role: selectedRole,
-                ...(selectedRole === 'farmer' && { coordinatorId })
+                ...(selectedRole === 'farmer' && { coordinatorId }),
+                ...(selectedRole === 'coordinator' && { adminId })
             };
 
             try {
                 const res = await axios.post(`http://localhost:8080/api/v1/${selectedRole}/signup`, newUser);
                 if (res.data.success) {
                     alert(res.data.message);
+                    
                     setTimeout(() => {
                         navigate('/signin');
                     }, 1000);
@@ -203,6 +225,42 @@ export default function Signup() {
                             </button>
                             <button
                                 onClick={handleCoordinatorIdSubmit}
+                                className="px-4 cursor-pointer py-2 bg-[#FF9119] text-white rounded-lg hover:bg-orange-600"
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Admin ID Modal for Coordinators */}
+            {showAdminIdModal && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex justify-center items-center">
+                    <div className="bg-white p-8 rounded-lg shadow-lg text-center w-96">
+                        <h3 className="text-lg font-semibold mb-4">Enter Admin ID</h3>
+                        <p className="text-sm text-gray-600 mb-4">Coordinators must provide an Admin ID to sign up.</p>
+
+                        <input
+                            type="text"
+                            value={adminId}
+                            onChange={(e) => setAdminId(e.target.value)}
+                            placeholder="Enter Admin ID"
+                            className="w-full px-3 py-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#FF9119]/50"
+                        />
+
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                onClick={() => {
+                                    setShowAdminIdModal(false);
+                                    setShowRoleModal(true);
+                                }}
+                                className="px-4 py-2 cursor-pointer bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAdminIdSubmit}
                                 className="px-4 cursor-pointer py-2 bg-[#FF9119] text-white rounded-lg hover:bg-orange-600"
                             >
                                 Submit
