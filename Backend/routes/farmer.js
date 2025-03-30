@@ -187,10 +187,12 @@ farmerRouter.put('/update-crop/:cropId', farmerAuth, async (req, res) => {
     try {
         const { cropId } = req.params;
 
+        const { title, description, imageURL, tag, price } = req.body;
+
         const updateCrop = await cropModel.findOneAndUpdate({ _id: cropId }, {
             title,
             description,
-            imgURL,
+            imageURL,
             tag,
             price
         }, {
@@ -215,10 +217,35 @@ farmerRouter.put('/update-crop/:cropId', farmerAuth, async (req, res) => {
     }
 })
 
-//preview all crops that added by the farmer
+//preview all crops
 farmerRouter.get('/preview-crops', farmerAuth, async (req, res) => {
     try {
         const crops = await cropModel.find({})
+
+        if (crops.length === 0) {
+            res.status(404).json({
+                success: false,
+                message: "No crops found."
+            })
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            crops: crops
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Internal server crash")
+    }
+})
+
+// preview all crops that added by the farmer
+farmerRouter.get('/add-crops-farmer/:farmerId', farmerAuth, async (req, res) => {
+    try {
+        const { farmerId } = req.params
+
+        const crops = await cropModel.find({ farmerId })
 
         if (crops.length === 0) {
             res.status(404).json({

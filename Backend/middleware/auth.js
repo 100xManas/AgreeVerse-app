@@ -81,10 +81,10 @@ async function coordinatorAuth(req, res, next) {
 
 async function farmerAuth(req, res, next) {
     try {
-        const token = req.cookies.token;
+        // const token = req.cookies.token;
 
-        // const token = req.header("token")
-        // console.log(token);
+        const token = req.header("token")
+        console.log(token);
         
         
         if (!token) {
