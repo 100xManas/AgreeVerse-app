@@ -138,43 +138,47 @@ farmerRouter.get('/dashboard', farmerAuth, (req, res) => {
 
 //add crops add the platform
 farmerRouter.post('/add-crop', farmerAuth, async (req, res) => {
-
     const addCropRequiredBody = z.object({
-        title: string(),
-        description: string(),
-        imgURL: string(),
-        tag: string(),
-        price: number()
+        title: z.string(),
+        description: z.string(),
+        imageURL: z.string(),
+        tag: z.string(),
+        price: z.number()
     })
 
-    const parsedData = addCropRequiredBody(req.body)
+    const parsedData = addCropRequiredBody.safeParse(req.body)
+
+    if (!parsedData.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid input data"
+        });
+    }
 
     try {
-        const { title, description, imgURL, tag, price } = parsedData.data
+
+        const { title, description, imageURL, tag, price } = parsedData.data
 
         const newCrop = await cropModel.create({
             title,
             description,
-            imgURL,
+            imageURL,
             tag,
             price,
-        })
-
-        if (!newCrop) {
-            res.status(401).json({
-                success: false,
-                message: "Something went wrong crop not added,"
-            })
-            return
-        }
+            farmerId: req.farmer._id  // Assuming farmerAuth middleware adds farmer to req
+        });
 
         res.status(200).json({
             success: true,
-            message: "Crop added successfully"
-        })
-    } catch (err) {
+            message: "Crop added successfully",
+            newCrop
+        });
+    } catch (error) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({
+            success: false,
+            message: "Failed to add crop"
+        });
     }
 })
 

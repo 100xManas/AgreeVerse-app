@@ -33,6 +33,7 @@ const cropSchema = new mongoose.Schema({
     imageURL: { type: String, required: true },
     tag: { type: String, enum: ['vegetable', 'fruit', 'grain'], required: true },
     price: { type: Number, required: true, min: 0 },
+    farmerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Farmer', required: true },
     createdAt: { type: Date, default: Date.now }
 });
 
