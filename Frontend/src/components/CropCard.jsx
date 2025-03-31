@@ -2,6 +2,8 @@ import React from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 
 const CropCard = ({ crop, onEdit, onDelete }) => {
+    console.log(crop);
+    
     const { title, description, imageURL, tag, price, createdAt } = crop;
 
     return (
