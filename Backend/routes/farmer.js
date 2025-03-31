@@ -127,7 +127,6 @@ farmerRouter.post('/signout', (req, res) => {
     }
 })
 
-
 farmerRouter.get('/dashboard', farmerAuth, (req, res) => {
     res.json({
         success: true,
