@@ -13,7 +13,7 @@ function FarmerDashboard() {
     description: '',
     tag: 'vegetable',
     price: 0,
-    imageData: ''  // Store base64 image data here
+    imageURL: ''
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState('');
@@ -70,9 +70,9 @@ function FarmerDashboard() {
         description: selectedCrop.description || '',
         tag: selectedCrop.tag || 'vegetable',
         price: selectedCrop.price || 0,
-        imageData: selectedCrop.imageData || ''
+        imageURL: selectedCrop.imageURL || ''
       });
-      setPreviewURL(selectedCrop.imageData || '');
+      setPreviewURL(selectedCrop.imageURL || '');
     } else {
       // Reset form when adding new
       setFormData({
@@ -80,7 +80,7 @@ function FarmerDashboard() {
         description: '',
         tag: 'vegetable',
         price: 0,
-        imageData: ''
+        imageURL: ''
       });
       setPreviewURL('');
       setSelectedFile(null);
@@ -146,7 +146,7 @@ function FarmerDashboard() {
         const base64 = await convertToBase64(file);
         setFormData({
           ...formData,
-          imageData: base64
+          imageURL: base64
         });
         setPreviewURL(base64);
       } catch (error) {
@@ -162,7 +162,7 @@ function FarmerDashboard() {
     setError('');
 
     // Validate form data
-    if (!formData.imageData) {
+    if (!formData.imageURL) {
       setError('Please upload an image');
       setLoading(false);
       return;
@@ -172,7 +172,7 @@ function FarmerDashboard() {
       const cropData = {
         title: formData.title,
         description: formData.description,
-        imageURL: formData.imageData,
+        imageURL: formData.imageURL,
         tag: formData.tag,
         price: formData.price
       };
@@ -207,7 +207,7 @@ function FarmerDashboard() {
           description: '',
           tag: 'vegetable',
           price: 0,
-          imageData: ''
+          imageURL: ''
         });
         setPreviewURL('');
         setSelectedFile(null);
@@ -224,8 +224,7 @@ function FarmerDashboard() {
     } finally {
       setLoading(false);
     }
-};
-
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -247,7 +246,7 @@ function FarmerDashboard() {
           <h1 className="text-2xl font-bold">Farmer Dashboard</h1>
           <nav className="mt-5">
             <ul className="space-y-4">
-              <li className="hover:text-orange-400 transition w-fit py-2 px-4 rounded cursor-pointer flex items-center gap-2">
+              <li className="hover:text-orange-400 hover:bg-zinc-700 transition py-2 px-4 rounded cursor-pointer flex items-center gap-2">
                 <Home size={20} /> Home
               </li>
               <li className="bg-zinc-700 p-2 rounded cursor-pointer flex items-center gap-2">
@@ -279,11 +278,19 @@ function FarmerDashboard() {
         </header>
 
         <main className="p-6 overflow-auto">
-          <div className="flex flex-wrap gap-8 mt-2">
-            {crops.map((crop) => (
-              <CropCard key={crop._id} crop={crop} onEdit={() => handleEdit(crop)} onDelete={() => handleDelete(crop._id)} />
-            ))}
-          </div>
+          {crops.length > 0 ? (
+            <div className="flex flex-wrap gap-8 mt-2">
+              {crops.map((crop) => (
+                <CropCard key={crop._id} crop={crop} onEdit={() => handleEdit(crop)} onDelete={() => handleDelete(crop._id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center bg-[#1e2329] rounded-lg p-4 mt-2 text-center">
+              <Sprout size={48} className="text-gray-400 mb-4" />
+              <h3 className="text-xl text-white font-semibold mb-2">No Crops Found</h3>
+              <p className="text-gray-400 mb-6">You haven't added any crops yet. Get started by adding your first crop.</p>
+            </div>
+          )}
         </main>
       </div>
 
@@ -362,7 +369,7 @@ function FarmerDashboard() {
                             type="button"
                             onClick={() => {
                               setPreviewURL('');
-                              setFormData({ ...formData, imageData: '' });
+                              setFormData({ ...formData, imageURL: '' });
                               setSelectedFile(null);
                             }}
                             className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"

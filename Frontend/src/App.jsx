@@ -32,7 +32,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/coordinator/dashboard" element={<CoordinatorDashboard />} />
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-        <Route path="/product/:productId" element={<ProtectedRoute><ProductDetailsAndPayment /></ProtectedRoute>} />
+        <Route path="/product/:productId" element={<ProductDetailsAndPayment />} />
         <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
 
         <Route path="*" element={<PageNotFound />} />
