@@ -155,7 +155,6 @@ farmerRouter.post('/add-crop', farmerAuth, async (req, res) => {
     }
 
     try {
-
         const { title, description, imageURL, tag, price } = parsedData.data
 
         const newCrop = await cropModel.create({
@@ -164,7 +163,7 @@ farmerRouter.post('/add-crop', farmerAuth, async (req, res) => {
             imageURL,
             tag,
             price,
-            farmerId: req.farmer._id  // Assuming farmerAuth middleware adds farmer to req
+            farmerId: req.farmer._id  
         });
 
         res.status(200).json({
@@ -173,7 +172,7 @@ farmerRouter.post('/add-crop', farmerAuth, async (req, res) => {
             newCrop
         });
     } catch (error) {
-        console.log(err);
+        console.log(error);
         res.status(500).json({
             success: false,
             message: "Failed to add crop"
@@ -191,7 +190,7 @@ farmerRouter.put('/update-crop/:cropId', farmerAuth, async (req, res) => {
         const updateCrop = await cropModel.findOneAndUpdate({ _id: cropId }, {
             title,
             description,
-            imageURL,
+            imageURL, 
             tag,
             price
         }, {
@@ -212,14 +211,18 @@ farmerRouter.put('/update-crop/:cropId', farmerAuth, async (req, res) => {
         })
     } catch (err) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error"
+        })
     }
 })
 
 //preview all crops
 farmerRouter.get('/preview-crops', farmerAuth, async (req, res) => {
     try {
-        const crops = await cropModel.find({})
+        // Filter crops by the current farmer's ID
+        const crops = await cropModel.find({ farmerId: req.farmer._id }) 
 
         if (crops.length === 0) {
             res.status(404).json({
@@ -235,7 +238,10 @@ farmerRouter.get('/preview-crops', farmerAuth, async (req, res) => {
         })
     } catch (err) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
     }
 })
 
@@ -260,7 +266,10 @@ farmerRouter.get('/add-crops-farmer/:farmerId', farmerAuth, async (req, res) => 
         })
     } catch (err) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error"
+        })
     }
 })
 
@@ -285,7 +294,10 @@ farmerRouter.delete('/delete-crop/:cropId', farmerAuth, async (req, res) => {
         })
     } catch (err) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error"
+        })
     }
 })
 
