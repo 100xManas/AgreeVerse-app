@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Trash2, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const UserCard = ({ user, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,22 +24,31 @@ const UserCard = ({ user, onDelete }) => {
         <p className="text-sm text-gray-700 font-medium">Role: {user.role}</p>
       </div>
       <div>
-        <Button onClick={handleDeleteClick} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+        <button 
+          onClick={handleDeleteClick}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded flex items-center justify-center transition-colors duration-200"
+        >
           <Trash2 className="w-4 h-4" />
-        </Button>
+        </button>
       </div>
       
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
             <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
             <div className="flex justify-center space-x-4">
-              <Button onClick={() => setIsModalOpen(false)} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors duration-200"
+              >
                 Cancel
-              </Button>
-              <Button onClick={handleDeleteConfirm} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+              </button>
+              <button 
+                onClick={handleDeleteConfirm}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors duration-200"
+              >
                 Delete
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -49,4 +57,4 @@ const UserCard = ({ user, onDelete }) => {
   );
 };
 
-export default UserCard ;
+export default UserCard;
