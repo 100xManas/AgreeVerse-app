@@ -155,7 +155,7 @@ coordinatorRouter.get('/all-farmers', coordinatorAuth, async (req, res) => {
 // Add farmer
 coordinatorRouter.post('/add-farmer', coordinatorAuth, async (req, res) => {
     try {
-        const { name, email, phone, password } = req.body;
+        const { name, email, phone, password, role } = req.body;
 
         // Check if farmer already exists
         const farmer = await Farmer.findOne({
@@ -178,6 +178,7 @@ coordinatorRouter.post('/add-farmer', coordinatorAuth, async (req, res) => {
             email,
             phone,
             password: hash,
+            role,
             coordinatorId: req.coordinator.id
         });
 
@@ -202,7 +203,8 @@ coordinatorRouter.post('/add-farmer', coordinatorAuth, async (req, res) => {
 // Update farmer
 coordinatorRouter.put('/update-farmer/:farmerId', coordinatorAuth, async (req, res) => {
     try {
-        const { coordinatorId, farmerId } = req.params;
+        const { farmerId } = req.params;
+        const coordinatorId = req.coordinator?.id;
         const updateData = req.body;
 
         // Remove password from update data if present
@@ -225,7 +227,7 @@ coordinatorRouter.put('/update-farmer/:farmerId', coordinatorAuth, async (req, r
         const updatedFarmer = await Farmer.findByIdAndUpdate(
             farmerId,
             { $set: updateData },
-            { new: true, select: '-password' }
+            { new: true }
         );
 
         res.status(200).json({
@@ -246,9 +248,9 @@ coordinatorRouter.put('/update-farmer/:farmerId', coordinatorAuth, async (req, r
 // Delete farmer
 coordinatorRouter.delete('/delete-farmer/:farmerId', coordinatorAuth, async (req, res) => {
     try {
-        const { coordinatorId, farmerId } = req.params;
+        const coordinatorId = req.coordinator?.id;
+        const { farmerId } = req.params;
 
-        // Check if farmer exists and belongs to coordinator
         const farmer = await Farmer.findOne({
             _id: farmerId,
             coordinatorId
@@ -280,19 +282,11 @@ coordinatorRouter.delete('/delete-farmer/:farmerId', coordinatorAuth, async (req
 
 
 
-// Get all crops added by coordinator
+// Get all crops
 coordinatorRouter.get('/all-crops', coordinatorAuth, async (req, res) => {
     try {
-        const coordinatorId = req.coordinator?.id;
-
-        if (!coordinatorId) {
-            return res.status(401).json({
-                success: false,
-                message: "Coordinator ID not found.",
-            });
-        }
-
-        const crops = await cropModel.find({ coordinatorId })
+       
+        const crops = await cropModel.find({})
 
         res.status(200).json({
             success: true,
@@ -310,50 +304,52 @@ coordinatorRouter.get('/all-crops', coordinatorAuth, async (req, res) => {
 });
 
 //add crop by co-ordinator
-coordinatorRouter.post('/add-crop', coordinatorAuth, async (req, res) => {
-    const addCropRequiredBody = z.object({
-        title: z.string(),
-        description: z.string(),
-        imageURL: z.string(),
-        tag: z.string(),
-        price: z.number()
-    })
+// coordinatorRouter.post('/add-crop', coordinatorAuth, async (req, res) => {
+//     const addCropRequiredBody = z.object({
+//         title: z.string(),
+//         description: z.string(),
+//         imageURL: z.string(),
+//         tag: z.string(),
+//         price: z.number()
+//     })
 
-    const parsedData = addCropRequiredBody.safeParse(req.body)
+//     const parsedData = addCropRequiredBody.safeParse(req.body)
 
-    if (!parsedData.success) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid input data"
-        });
-    }
+//     if (!parsedData.success) {
+//         return res.status(400).json({
+//             success: false,
+//             message: "Invalid input data"
+//         });
+//     }
 
-    try {
-        const { title, description, imageURL, tag, price } = parsedData.data
+//     try {
+//         const { title, description, imageURL, tag, price } = parsedData.data
 
-        const newCrop = await cropModel.create({
-            title,
-            description,
-            imageURL,
-            tag,
-            price,
-            coordinatorId: req.coordinator._id,
-            farmerId:
-        });
+//         const newCrop = await cropModel.create({
+//             title,
+//             description,
+//             imageURL,
+//             tag,
+//             price,
+//             coordinatorId: req.coordinator._id,
+//             // farmerId:
+//         });
 
-        res.status(200).json({
-            success: true,
-            message: "Crop added successfully",
-            newCrop
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to add crop"
-        });
-    }
-})
+//         res.status(200).json({
+//             success: true,
+//             message: "Crop added successfully",
+//             newCrop
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             success: false,
+//             message: "Failed to add crop"
+//         });
+//     }
+// })
+
+
 
 //update crop by co-ordinator
 coordinatorRouter.put('/update-crop/:cropId', coordinatorAuth, async (req, res) => {

@@ -56,10 +56,10 @@ async function adminAuth(req, res, next) {
 
 async function coordinatorAuth(req, res, next) {
     try {
-        // const token = req.cookies.token;
+        const token = req.cookies.token;
 
-        const token = req.header("token")
-        console.log(token);
+        // const token = req.header("token")
+        // console.log(token);
 
         if (!token) {
             throw new Error('Authentication required');
