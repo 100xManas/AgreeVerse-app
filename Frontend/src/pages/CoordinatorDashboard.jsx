@@ -1,362 +1,391 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Home, Sprout, Users, LogOut, Plus, X, Upload } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Home, Sprout, Users, LogOut, Plus, X } from "lucide-react";
 import { AuthContext } from "../useContext/AuthContext";
 import axios from "axios";
+import UserCard from "../components/UserCard";
 import CropCard from "../components/CropCard";
 
 const CoordinatorDashboard = () => {
-  // State for modal management
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalRole, setModalRole] = useState("");
+  const [activeTab, setActiveTab] = useState("crops");
+  const { user, setUser } = useContext(AuthContext); // Added setUser
+  const navigate = useNavigate();
 
-  const { user } = useContext(AuthContext)
-
-  // State specifically for crop form
-  const [selectedCrop, setSelectedCrop] = useState(null);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isConverting, setIsConverting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState("");
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    imageURL: "",
-    tag: "vegetable",
-    price: ""
+  const [farmers, setFarmers] = useState([]);
+  const [farmerFormData, setFarmerFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "farmer" 
   });
-  const [crops, setCrops] = useState([])
+  const [crops, setCrops] = useState([]);
 
-
+  const API_BASE_URL = "http://localhost:8080/api/v1/coordinator";
 
   useEffect(() => {
-    async function fetchCrops(){
-      const res = await axios.get(`http://localhost/api/v1/${user._id}/all-farmers`, {withCredentials:true})
-      setCrops(res.data)
+    fetchCrops();
+  }, []);
+
+  const fetchFarmers = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/all-farmers`, { withCredentials: true });
+      if (response.data.success) {
+        setFarmers(response.data.farmers);
+      }
+    } catch (error) {
+      console.error("Error fetching farmers:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchCrops()
-  }, [crops])
+  const fetchCrops = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/all-crops`, { withCredentials: true });
+      if (response.data.success) {
+        setCrops(response.data.crops || []);
+      }
+    } catch (error) {
+      console.error("Error fetching crops:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Modal control functions
-  const openModal = (role) => {
-    setModalRole(role);
+  // const handleLogout = async () => {
+  //   try {
+  //     await axios.post(`${API_BASE_URL}/signout`, {}, { withCredentials: true });
+      
+  //     navigate("/login");
+  //   } catch (error) {
+  //     console.error("Error logging out:", error);
+  //   }
+  // };
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/signout`, {}, { withCredentials: true });
+      console.log(response.data);
+      
+      if (response.data.success) {
+        navigate("/signin"); 
+      } else {
+        console.error("Logout failed:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error.response?.data || error.message);
+    }
+  };
+
+  const openModal = () => {
     setIsModalOpen(true);
-
-    // Reset form data when opening a new crop modal
-    if (role === "Crop") {
-      setFormData({
-        title: "",
-        description: "",
-        imageURL: "",
-        tag: "vegetable",
-        price: ""
-      });
-      setPreviewURL("");
-      setSelectedFile(null);
-      setError("");
-    }
+    setFarmerFormData({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      role: "farmer" 
+    });
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedCrop(null);
-    setError("");
   };
 
-  // Form handling functions
-  const handleChange = (e) => {
+  const handleFarmerChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    if (name === "role") return; 
+    setFarmerFormData({
+      ...farmerFormData,
       [name]: value
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 5MB.");
-      return;
-    }
-
-    setSelectedFile(file);
-    setIsConverting(true);
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreviewURL(reader.result);
-      setFormData({
-        ...formData,
-        imageURL: reader.result
-      });
-      setIsConverting(false);
-    };
-    reader.onerror = () => {
-      setError("Error reading file");
-      setIsConverting(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = (e) => {
+  const handleFarmerSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form submitted:", formData);
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/add-farmer`,
+        farmerFormData,
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        fetchFarmers();
+        closeModal();
+        alert("Farmer added successfully");
+      }
+    } catch (error) {
+      if (error.response?.status === 409) {
+        alert("Farmer with this email or phone already exists");
+      } else {
+        alert("Failed to add farmer");
+      }
+      console.error("Error adding farmer:", error);
+    } finally {
       setLoading(false);
-      closeModal();
-    }, 1000);
+    }
+  };
+
+  const handleDeleteFarmer = async (farmerId) => {
+    if (window.confirm("Are you sure you want to delete this farmer?")) {
+      try {
+        setLoading(true);
+        const response = await axios.delete(
+          `${API_BASE_URL}/delete-farmer/${farmerId}`,
+          { withCredentials: true }
+        );
+
+        if (response.data.success) {
+          fetchFarmers();
+          alert("Farmer deleted successfully");
+        }
+      } catch (error) {
+        alert("Failed to delete farmer");
+        console.error("Error deleting farmer:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleDeleteCrop = async (cropId) => {
+    if (window.confirm("Are you sure you want to delete this crop?")) {
+      try {
+        setLoading(true);
+        const response = await axios.delete(
+          `${API_BASE_URL}/delete-crop/${cropId}`,
+          { withCredentials: true }
+        );
+
+        if (response.data.success) {
+          fetchCrops();
+          alert("Crop deleted successfully");
+        }
+      } catch (error) {
+        alert("Failed to delete crop");
+        console.error("Error deleting crop:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'farmers' && farmers.length === 0) {
+      fetchFarmers();
+    }
+  };
+
+  const getProfilePicture = () => {
+    if (user?.googleProfilePicture) {
+      return user.googleProfilePicture;
+    }
+    return "/profile-placeholder.png";
   };
 
   return (
     <div className="flex h-screen bg-[#181a20]">
-      {/* Sidebar */}
       <aside className="w-64 bg-[#1e2329] text-white p-5 flex flex-col justify-between">
         <div>
           <h2 className="text-2xl font-bold">Coordinator Dashboard</h2>
           <nav className="mt-5">
             <ul className="space-y-4">
-              <li className="hover:text-orange-400 transition w-fit py-2 px-4 rounded cursor-pointer flex items-center gap-2">
-                <Home size={20} /> <Link to="/coordinator/home">Home</Link>
+              <li className="hover:text-orange-400 transition p-2 rounded cursor-pointer flex items-center gap-2">
+                <Home size={20} /> <Link to="/user/home">Home</Link>
               </li>
-              <li className="bg-zinc-700 p-2 rounded cursor-pointer flex items-center gap-2">
-                <Sprout size={20} /> <Link to="/coordinator/crops">Crops</Link>
+              <li
+                className={`${activeTab === 'crops' ? 'bg-zinc-700' : 'hover:text-orange-400 transition'} p-2 rounded cursor-pointer flex items-center gap-2`}
+                onClick={() => handleTabChange('crops')}
+              >
+                <Sprout size={20} /> <span>Crops</span>
               </li>
-              <li className="hover:text-orange-400 transition w-fit py-2 px-4 rounded cursor-pointer flex items-center gap-2">
-                <Users size={20} /> <Link to="/coordinator/farmers">Farmers</Link>
+              <li
+                className={`${activeTab === 'farmers' ? 'bg-zinc-700' : 'hover:text-orange-400 transition'} p-2 rounded cursor-pointer flex items-center gap-2`}
+                onClick={() => handleTabChange('farmers')}
+              >
+                <Users size={20} /> <span>Farmers</span>
               </li>
             </ul>
           </nav>
         </div>
-        <button className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2"
+        >
           <LogOut size={20} /> Logout
         </button>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Navbar */}
         <header className="bg-[#1e2329] shadow-md p-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="h-14 w-14 rounded-md overflow-hidden">
-              <img src={user.googleProfilePicture} alt="Profile Picture" className="w-full h-full object-cover" />
+              <img src={getProfilePicture()} alt="Profile" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h2 className="text-xl text-white font-semibold">{user.name}</h2>
-              <p className="text-gray-400">{user.email}</p>
-              <p className="text-white font-semibold">Role: {user.role}</p>
+              <h2 className="text-xl text-white font-semibold">{user?.name || "Coordinator"}</h2>
+              <p className="text-gray-400">{user?.email || "email@example.com"}</p>
+              <p className="text-white font-semibold">Role: Coordinator</p>
             </div>
           </div>
-          <div className="flex space-x-4">
-            <button onClick={() => openModal("Farmer")} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2">
+          <div>
+            <button onClick={openModal} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2">
               <Plus size={20} /> Add Farmer
-            </button>
-            <button onClick={() => openModal("Crop")} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2">
-              <Plus size={20} /> Add a Crop
             </button>
           </div>
         </header>
 
-        <main className="p-6">
-          {
-            crops.length > 1 ? (
-              crops.map((crop, index)=>(
-                <CropCard />
-              ))
-            ) : (
-              <p>No crop yet</p>
-            )
-          }
+        <main className="p-6 text-white overflow-y-auto">
+          {activeTab === 'farmers' ? (
+            <>
+              <h3 className="text-xl font-semibold mb-4">Farmers</h3>
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <>
+                  {farmers.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {farmers.map((farmer) => (
+                        <UserCard
+                          key={farmer._id}
+                          user={farmer}
+                          onDelete={handleDeleteFarmer}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-400">No farmers found. Add your first farmer!</p>
+                      <button
+                        onClick={openModal}
+                        className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded inline-flex items-center gap-2"
+                      >
+                        <Plus size={18} /> Add Farmer
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className="text-xl font-semibold mb-4">Crops</h3>
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+                </div>
+              ) : (
+                <>
+                  {crops.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {crops.map((crop) => (
+                        <CropCard
+                          key={crop._id}
+                          crop={crop}
+                          onDelete={() => handleDeleteCrop(crop._id)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-400">No crops available.</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
         </main>
       </div>
 
-      {/* Simple Farmer Modal */}
-      {isModalOpen && modalRole === "Farmer" && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-[#1e2329] p-6 rounded-lg w-96 text-white">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">Add Farmer</h2>
               <button onClick={closeModal}><X size={20} /></button>
             </div>
-            <input type="text" placeholder="Name" className="w-full p-2 mb-2 bg-gray-700 rounded" />
-            <input type="email" placeholder="Email" className="w-full p-2 mb-2 bg-gray-700 rounded" />
-            <input type="text" placeholder="Phone" className="w-full p-2 mb-2 bg-gray-700 rounded" />
-            <button className="w-full py-2 rounded bg-blue-500 hover:bg-blue-600">Add Farmer</button>
-          </div>
-        </div>
-      )}
 
-      {/* Enhanced Crop Modal */}
-      {isModalOpen && modalRole === "Crop" && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1e2329] text-white rounded-lg p-5 w-full max-w-xl mx-2 md:mx-0 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center bg-[#1e2329] py-2">
-              <h2 className="text-xl font-bold">
-                {selectedCrop ? 'Edit Crop' : 'Add New Crop'}
-              </h2>
+            <form onSubmit={handleFarmerSubmit}>
+              <div className="mb-3">
+                <label className="block text-gray-300 mb-1 text-sm">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={farmerFormData.name}
+                  onChange={handleFarmerChange}
+                  className="w-full p-2 bg-gray-700 rounded"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-gray-300 mb-1 text-sm">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={farmerFormData.email}
+                  onChange={handleFarmerChange}
+                  className="w-full p-2 bg-gray-700 rounded"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-gray-300 mb-1 text-sm">Phone Number</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={farmerFormData.phone}
+                  onChange={handleFarmerChange}
+                  className="w-full p-2 bg-gray-700 rounded"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-gray-300 mb-1 text-sm">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={farmerFormData.password}
+                  onChange={handleFarmerChange}
+                  className="w-full p-2 bg-gray-700 rounded"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-gray-300 mb-1 text-sm">Role*</label>
+                <input
+                  type="text"
+                  name="role"
+                  value={farmerFormData.role}
+                  onChange={handleFarmerChange}
+                  className="w-full p-2 bg-gray-700 rounded text-gray-400 cursor-not-allowed"
+                  disabled
+                  required
+                />
+              </div>
+
               <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-white cursor-pointer"
+                type="submit"
+                className="w-full py-2 rounded bg-blue-500 hover:bg-blue-600 flex justify-center items-center"
+                disabled={loading}
               >
-                <X size={22} />
+                {loading ? "Adding..." : "Add Farmer"}
               </button>
-            </div>
-
-            {error && (
-              <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-2 rounded mb-4 text-sm transition-opacity duration-300">
-                <div className="flex justify-between items-center">
-                  <span>{error}</span>
-                  <button
-                    onClick={() => setError('')}
-                    className="text-red-100 hover:text-white ml-2"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-gray-300 mb-1 text-sm">Title</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    className="w-full bg-[#292d35] border border-gray-700 rounded px-3 py-2 text-sm text-white"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-300 mb-1 text-sm">Description</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="w-full bg-[#292d35] border resize-none border-gray-700 rounded px-3 py-2 text-sm text-white"
-                    rows="3"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-300 mb-1 text-sm">Image Upload</label>
-                  <div className="border border-dashed border-gray-600 rounded-lg p-4 relative">
-                    {previewURL ? (
-                      <div className="flex flex-col items-center">
-                        <div className="relative w-full">
-                          <img
-                            src={previewURL}
-                            alt="Preview"
-                            className="max-h-40 object-contain mx-auto"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = '/placeholder-image.jpg';
-                              setError('Invalid image. Please try another file.');
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPreviewURL('');
-                              setFormData({ ...formData, imageURL: '' });
-                              setSelectedFile(null);
-                            }}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                        <span className="text-xs text-gray-400 mt-2">
-                          {selectedFile ? selectedFile.name : 'Current image'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        <input
-                          type="file"
-                          id="cropImage"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="cropImage"
-                          className="cursor-pointer bg-[#292d35] hover:bg-[#35393f] text-center w-full px-3 py-4 rounded-md flex flex-col items-center justify-center gap-2 transition"
-                        >
-                          <Upload size={24} className="text-gray-400" />
-                          <span className="text-sm text-gray-300">Click to upload image</span>
-                          <span className="text-xs text-gray-400">JPG, PNG, GIF (Max 5MB)</span>
-                        </label>
-                      </div>
-                    )}
-                    {isConverting && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                        <p className="text-sm text-white">Converting image...</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-300 mb-1 text-sm">Category</label>
-                    <select
-                      name="tag"
-                      value={formData.tag}
-                      onChange={handleChange}
-                      className="w-full bg-[#292d35] cursor-pointer border border-gray-700 rounded px-3 py-2 text-sm text-white"
-                      required
-                    >
-                      <option value="vegetable">Vegetable</option>
-                      <option value="fruit">Fruit</option>
-                      <option value="grain">Grain</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-300 mb-1 text-sm">Price</label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleChange}
-                      min="0"
-                      step="0.01"
-                      className="w-full bg-[#292d35] border border-gray-700 rounded px-3 py-2 text-sm text-white"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3 bg-[#1e2329] py-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-5 py-2 font-semibold bg-gray-700 cursor-pointer hover:bg-gray-600 rounded text-sm w-full sm:w-auto"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 font-semibold cursor-pointer bg-green-600 hover:bg-green-700 rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
-                  disabled={loading || isConverting}
-                >
-                  {loading ? 'Saving...' : selectedCrop ? 'Update Crop' : 'Add Crop'}
-                </button>
-              </div>
             </form>
           </div>
         </div>
