@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const coordinatorRouter = express.Router()
 const dotenv = require('dotenv')
-const { Coordinator, Farmer } = require('../models/db')
+const { Coordinator, Farmer, cropModel } = require('../models/db')
 const { coordinatorAuth } = require('../middleware/auth')
+const { z } = require("zod")
 
 dotenv.config()
 
@@ -114,32 +115,51 @@ coordinatorRouter.post('/signout', (req, res) => {
 
 
 // Coordinator access there profile and perform the CURD operation
-
 coordinatorRouter.get('/dashboard', coordinatorAuth, (req, res) => {
     res.json({
         success: true,
         message: "Coordinator login successfully",
-        user:req.coordinator
+        user: req.coordinator
     })
 })
 
-// Add farmer
-coordinatorRouter.post('/:coordinatorId/add-farmer', coordinatorAuth, async (req, res) => {
+// Get all farmers added by coordinator
+coordinatorRouter.get('/all-farmers', coordinatorAuth, async (req, res) => {
     try {
-        const { coordinatorId } = req.params;
-        const { name, email, phoneNo, password } = req.body;
+        const coordinatorId = req.coordinator?.id;
 
-        // Validate required fields
-        if (!name || !email || !phoneNo || !password) {
-            return res.status(400).json({
+        if (!coordinatorId) {
+            return res.status(401).json({
                 success: false,
-                message: "All fields are required"
+                message: "Coordinator ID not found.",
             });
         }
 
+        const farmers = await Farmer.find({ coordinatorId })
+
+        res.status(200).json({
+            success: true,
+            message: farmers.length ? "Farmers retrieved successfully" : "No farmers found",
+            farmers,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+});
+
+// Add farmer
+coordinatorRouter.post('/add-farmer', coordinatorAuth, async (req, res) => {
+    try {
+        const { name, email, phone, password } = req.body;
+
         // Check if farmer already exists
         const farmer = await Farmer.findOne({
-            $or: [{ email }, { phoneNo }]
+            $or: [{ email }, { phone }]
         });
 
         if (farmer) {
@@ -156,20 +176,18 @@ coordinatorRouter.post('/:coordinatorId/add-farmer', coordinatorAuth, async (req
         const newFarmer = await Farmer.create({
             name,
             email,
-            phoneNo,
+            phone,
             password: hash,
-            coordinatorId
+            coordinatorId: req.coordinator.id
         });
+
+        console.log(newFarmer);
+
 
         res.status(201).json({
             success: true,
-            message: `New farmer created by coordinator ${coordinatorId}`,
-            data: {
-                id: newFarmer._id,
-                name: newFarmer.name,
-                email: newFarmer.email,
-                phoneNo: newFarmer.phoneNo
-            }
+            message: `New farmer created by coordinator ${req.coordinator.id}`,
+            newFarmer
         });
 
     } catch (error) {
@@ -182,7 +200,7 @@ coordinatorRouter.post('/:coordinatorId/add-farmer', coordinatorAuth, async (req
 });
 
 // Update farmer
-coordinatorRouter.put('/:coordinatorId/update-farmer/:farmerId', coordinatorAuth, async (req, res) => {
+coordinatorRouter.put('/update-farmer/:farmerId', coordinatorAuth, async (req, res) => {
     try {
         const { coordinatorId, farmerId } = req.params;
         const updateData = req.body;
@@ -226,7 +244,7 @@ coordinatorRouter.put('/:coordinatorId/update-farmer/:farmerId', coordinatorAuth
 });
 
 // Delete farmer
-coordinatorRouter.delete('/:coordinatorId/delete-farmer/:farmerId', coordinatorAuth, async (req, res) => {
+coordinatorRouter.delete('/delete-farmer/:farmerId', coordinatorAuth, async (req, res) => {
     try {
         const { coordinatorId, farmerId } = req.params;
 
@@ -260,33 +278,26 @@ coordinatorRouter.delete('/:coordinatorId/delete-farmer/:farmerId', coordinatorA
     }
 });
 
-// Get all farmers
-coordinatorRouter.get('/:coordinatorId/all-farmers', coordinatorAuth, async (req, res) => {
+
+
+// Get all crops added by coordinator
+coordinatorRouter.get('/all-crops', coordinatorAuth, async (req, res) => {
     try {
-        const { coordinatorId } = req.params;
+        const coordinatorId = req.coordinator?.id;
 
-        // Add pagination
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+        if (!coordinatorId) {
+            return res.status(401).json({
+                success: false,
+                message: "Coordinator ID not found.",
+            });
+        }
 
-        // Get farmers with pagination
-        const farmers = await Farmer.find({ coordinatorId })
-            .select('-password')
-            .skip(skip)
-            .limit(limit);
-
-        // Get total count for pagination
-        const total = await Farmer.countDocuments({ coordinatorId });
+        const crops = await cropModel.find({ coordinatorId })
 
         res.status(200).json({
             success: true,
-            data: farmers,
-            pagination: {
-                total,
-                page,
-                pages: Math.ceil(total / limit)
-            }
+            message: crops.length ? "crops retrieved successfully" : "No crops found",
+            crops,
         });
 
     } catch (error) {
@@ -297,5 +308,117 @@ coordinatorRouter.get('/:coordinatorId/all-farmers', coordinatorAuth, async (req
         });
     }
 });
+
+//add crop by co-ordinator
+coordinatorRouter.post('/add-crop', coordinatorAuth, async (req, res) => {
+    const addCropRequiredBody = z.object({
+        title: z.string(),
+        description: z.string(),
+        imageURL: z.string(),
+        tag: z.string(),
+        price: z.number()
+    })
+
+    const parsedData = addCropRequiredBody.safeParse(req.body)
+
+    if (!parsedData.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid input data"
+        });
+    }
+
+    try {
+        const { title, description, imageURL, tag, price } = parsedData.data
+
+        const newCrop = await cropModel.create({
+            title,
+            description,
+            imageURL,
+            tag,
+            price,
+            coordinatorId: req.coordinator._id,
+            farmerId:
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Crop added successfully",
+            newCrop
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to add crop"
+        });
+    }
+})
+
+//update crop by co-ordinator
+coordinatorRouter.put('/update-crop/:cropId', coordinatorAuth, async (req, res) => {
+    try {
+        const { cropId } = req.params;
+
+        const { title, description, imageURL, tag, price } = req.body;
+
+        const updateCrop = await cropModel.findOneAndUpdate({ _id: cropId }, {
+            title,
+            description,
+            imageURL,
+            tag,
+            price
+        }, {
+            new: true
+        })
+
+        if (!updateCrop) {
+            res.status(404).json({
+                success: false,
+                message: "Crop not found or not updated."
+            })
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Crop updated successfully"
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+})
+
+//delete crop by co-ordinator
+coordinatorRouter.delete('/delete-crop/:cropId', coordinatorAuth, async (req, res) => {
+    try {
+        const { cropId } = req.params;
+
+        const deleteCrop = await cropModel.findOneAndDelete({ _id: cropId })
+
+        if (!deleteCrop) {
+            res.status(404).json({
+                success: false,
+                message: "Crop not found or not deleted."
+            })
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Crop deleted successfully"
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+})
 
 module.exports = coordinatorRouter

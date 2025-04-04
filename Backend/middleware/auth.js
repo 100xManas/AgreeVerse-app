@@ -5,7 +5,7 @@ async function userAuth(req, res, next) {
     try {
         const token = req.cookies.token;
         // console.log(token);
-        
+
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -56,8 +56,10 @@ async function adminAuth(req, res, next) {
 
 async function coordinatorAuth(req, res, next) {
     try {
-        const token = req.cookies.token;
-        // console.log(token);
+        // const token = req.cookies.token;
+
+        const token = req.header("token")
+        console.log(token);
 
         if (!token) {
             throw new Error('Authentication required');
@@ -85,8 +87,7 @@ async function farmerAuth(req, res, next) {
 
         // const token = req.header("token")
         // console.log(token);
-        
-        
+
         if (!token) {
             return res.status(401).send("Unauthorized");
         }
@@ -110,7 +111,7 @@ async function farmerAuth(req, res, next) {
 
 module.exports = {
     userAuth,
-    adminAuth,  
+    adminAuth,
     coordinatorAuth,
     farmerAuth
 };
