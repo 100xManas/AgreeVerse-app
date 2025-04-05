@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Trash2, User } from "lucide-react";
 
-const UserCard = ({ user, onDelete }) => {
+const UserCard = ({ user, onDelete }) => {  
     
   const handleDeleteConfirm = () => {
     onDelete(user._id);
