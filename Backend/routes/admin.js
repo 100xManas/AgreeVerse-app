@@ -2,7 +2,7 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const { z } = require('zod');
 const bcrypt = require('bcrypt');
-const { Admin, Coordinator, Farmer } = require('../models/db')
+const { Admin, Coordinator, Farmer, cropModel, paymentModel } = require('../models/db')
 const adminRouter = express.Router()
 const googleAuthRouter = require('./googleAuth');
 const { adminAuth } = require('../middleware/auth');
@@ -115,9 +115,55 @@ adminRouter.get('/dashboard', adminAuth, (req, res) => {
     res.json({
         success: true,
         message: "Admin login successfully",
-        user:req.admin
+        user: req.admin
     })
 })
+
+// Get all farmers
+adminRouter.get("/get-farmers", adminAuth, async (req, res) => {
+    try {
+        const farmers = await Farmer.find().select("-password");
+        res.status(200).json({
+            success: true,
+            message: farmers.length ? "Farmer retrived successfully" : "no former found",
+            farmers
+        });
+    } catch (err) {
+        console.log("Error fetching farmers:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// Get all coordinators
+adminRouter.get("/get-coordinators", adminAuth, async (req, res) => {
+    try {
+        const coordinators = await Coordinator.find().select("-password");
+        res.status(200).json({
+            success: true,
+            message: coordinators.length ? "coordinators retrived successfully" : "no coordinator found",
+            coordinators
+        });
+    } catch (err) {
+        console.log("Error fetching coordinators:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// Get all crops
+adminRouter.get("/get-crops", adminAuth, async (req, res) => {
+    try {
+        const crops = await cropModel.find();
+        res.status(200).json({
+            success: true,
+            message: crops.length ? "crops retrived successfully" : "no crops found",
+            crops
+        });
+    } catch (err) {
+        console.log("Error fetching crops:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 
 // Coordinator validation schema
 const coordinatorSchema = z.object({
@@ -445,71 +491,22 @@ adminRouter.delete('/delete-farmer/:farmerId', adminAuth, async (req, res) => {
     }
 });
 
-
-// Get payment status for all purchases 
-adminRouter.get('/payment-status', adminAuth, async (req, res) => {
+// Get all payments
+adminRouter.get("/payment-status", adminAuth, async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+      const payments = await paymentModel.find()
+        .populate("userId", "name") 
+        .sort({ paymentDate: -1 }); 
 
-        // Filter options
-        const filters = {};
-        if (req.query.status) filters.status = req.query.status;
-        if (req.query.farmerId) filters.farmerId = req.query.farmerId;
-        if (req.query.coordinatorId) filters.coordinatorId = req.query.coordinatorId;
-
-        // Date range filter
-        if (req.query.startDate && req.query.endDate) {
-            filters.createdAt = {
-                $gte: new Date(req.query.startDate),
-                $lte: new Date(req.query.endDate)
-            };
-        }
-
-        // Get payments with pagination
-        const payments = await Payment.find(filters)
-            .populate('farmerId', 'name email phoneNo')
-            .populate('coordinatorId', 'name region')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        // Get total count
-        const total = await Payment.countDocuments(filters);
-
-        // Get payment statistics
-        const stats = await Payment.aggregate([
-            { $match: filters },
-            {
-                $group: {
-                    _id: '$status',
-                    count: { $sum: 1 },
-                    totalAmount: { $sum: '$amount' }
-                }
-            }
-        ]);
-
-        res.status(200).json({
-            success: true,
-            data: {
-                payments,
-                stats,
-                pagination: {
-                    total,
-                    page,
-                    pages: Math.ceil(total / limit)
-                }
-            }
-        });
-
-    } catch (error) {
-        console.error('Payment status error:', error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+      res.status(200).json({
+        success:true,
+        message:payments.length ? "payments retrived successfully" : "no payment yet",
+        payments
+      });
+    } catch (err) {
+      console.log("Error fetching payments:", err);
+      res.status(500).json({ message: "Server error" });
     }
-});
+  });
 
 module.exports = adminRouter;

@@ -4,7 +4,6 @@ const { User, Admin, Coordinator, Farmer } = require('../models/db');
 async function userAuth(req, res, next) {
     try {
         const token = req.cookies.token;
-        // console.log(token);
 
         if (!token) {
             throw new Error('Authentication required');
@@ -32,6 +31,8 @@ async function userAuth(req, res, next) {
 async function adminAuth(req, res, next) {
     try {
         const token = req.cookies.token;
+
+        // const token = req.header("token")
         // console.log(token);
 
         if (!token) {
@@ -58,9 +59,6 @@ async function coordinatorAuth(req, res, next) {
     try {
         const token = req.cookies.token;
 
-        // const token = req.header("token")
-        // console.log(token);
-
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -84,9 +82,6 @@ async function coordinatorAuth(req, res, next) {
 async function farmerAuth(req, res, next) {
     try {
         const token = req.cookies.token;
-
-        // const token = req.header("token")
-        // console.log(token);
 
         if (!token) {
             return res.status(401).send("Unauthorized");
