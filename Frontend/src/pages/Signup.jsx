@@ -66,13 +66,13 @@ export default function Signup() {
         if (googleSignup) {
             // Redirect for Google OAuth with role and IDs (if applicable)
             let redirectUrl = `http://localhost:8080/auth/google?role=${selectedRole}`;
-            
+
             if (selectedRole === 'farmer') {
                 redirectUrl += `&coordinatorId=${coordinatorId}`;
             } else if (selectedRole === 'coordinator') {
                 redirectUrl += `&adminId=${adminId}`;
             }
-            
+
             window.location.href = redirectUrl;
         } else {
             // Normal signup process
@@ -90,14 +90,14 @@ export default function Signup() {
                 const res = await axios.post(`http://localhost:8080/api/v1/${selectedRole}/signup`, newUser);
                 if (res.data.success) {
                     alert(res.data.message);
-                    
+
                     setTimeout(() => {
                         navigate('/signin');
                     }, 1000);
                 }
             } catch (error) {
                 console.log(error.response);
-                
+
                 if (error.response && error.response.status === 409) {
                     alert(error.response.data);
                 }
@@ -173,9 +173,9 @@ export default function Signup() {
 
             {/* Role Selection Modal */}
             {showRoleModal && (
-                <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex justify-center items-center">
-                    <div className="bg-white p-10 rounded-lg shadow-lg text-center">
-                        <h3 className="text-lg font-semibold mb-4">Select Your Role</h3>
+                <div className="fixed inset-0 bg-[#181a20] bg-opacity-70 flex justify-center items-center">
+                    <div className="bg-gray-700 p-10 rounded-lg shadow-lg text-center">
+                        <h3 className="text-lg text-white font-semibold mb-4">Select Your Role</h3>
                         <div className="grid grid-cols-2 gap-5">
                             <button onClick={() => handleRoleSelection("admin")}
                                 className="py-2.5 px-5 hover:cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600">

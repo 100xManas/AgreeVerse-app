@@ -12,10 +12,6 @@ function AuthSuccess() {
         const userExists = queryParams.get("newUser") === "true";
         const role = queryParams.get("role")
 
-        // console.log(newUser, role);
-        
-        console.log("AuthSuccess Query Params:", { userExists });
-
         if (userExists) {
             const handleAuthSuccess = async () => {
                 try {
@@ -23,25 +19,23 @@ function AuthSuccess() {
                     console.log("User data fetched:", user);
 
                     if (user?.role === "user") {
-                        console.log(`Redirecting to /${user.role}/home`);
                         navigate(`/${user.role}/home`);
                     } else if (user?.role) {
-                        console.log(`Redirecting to /${user.role}/dashboard`);
                         navigate(`/${user.role}/dashboard`);
                     }
                     else {
-                        console.error("User role not found, redirecting to signin...");
                         navigate("/signin");
                     }
                 } catch (error) {
-                    console.error("Error fetching user:", error);
+                    alert("Error fetching user");
+                    console.log("Error fetching user:", error);
                     navigate("/signin");
                 }
             };
 
             handleAuthSuccess();
         } else {
-            console.log("Invalid auth data, redirecting to signin...");
+            alert("Invalid auth data, redirecting to signin...");
             navigate("/signin");
         }
     }, [location, navigate, fetchUserDetails, user]);

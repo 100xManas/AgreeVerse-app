@@ -23,7 +23,7 @@ function FarmerDashboard() {
   // Add a ref to track the error timeout
   const errorTimeoutRef = useRef(null);
 
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   // Auto-dismiss error messages after 5 seconds
   useEffect(() => {
@@ -32,13 +32,13 @@ function FarmerDashboard() {
       if (errorTimeoutRef.current) {
         clearTimeout(errorTimeoutRef.current);
       }
-      
+
       // Set new timeout to clear error after 5 seconds
       errorTimeoutRef.current = setTimeout(() => {
         setError('');
       }, 5000);
     }
-    
+
     // Cleanup function to clear timeout when component unmounts or error changes
     return () => {
       if (errorTimeoutRef.current) {
@@ -178,7 +178,7 @@ function FarmerDashboard() {
       };
 
       console.log(cropData);
-      
+
       let response;
       if (selectedCrop) {
         // Update existing crop
@@ -239,6 +239,14 @@ function FarmerDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    const success = await logout();
+    if (success) {
+      alert("Logged out successfully")
+      navigate("/"); 
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#181a20]">
       <aside className="w-64 bg-[#1e2329] text-white p-5 flex flex-col justify-between">
@@ -255,7 +263,9 @@ function FarmerDashboard() {
             </ul>
           </nav>
         </div>
-        <button className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
+        <button 
+        onClick={handleLogout} 
+        className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
           <LogOut size={20} /> Logout
         </button>
       </aside>
@@ -264,7 +274,7 @@ function FarmerDashboard() {
         <header className="bg-[#1e2329] shadow-md p-4 flex justify-between items-center">
           <div className='flex gap-3 items-center'>
             <div className='h-16 w-16 overflow-hidden rounded-md'>
-              <img src={user.googleProfilePicture} alt="profile picture" srcSet="" className='w-full h-full object-cover' />
+              <img src={user.googleProfilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt="profile picture" srcSet="" className='w-full h-full object-cover' />
             </div>
             <div>
               <h2 className="text-xl text-white font-semibold">{user.name}</h2>
@@ -313,7 +323,7 @@ function FarmerDashboard() {
               <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-2 rounded mb-4 text-sm transition-opacity duration-300">
                 <div className="flex justify-between items-center">
                   <span>{error}</span>
-                  <button 
+                  <button
                     onClick={() => setError('')}
                     className="text-red-100 hover:text-white ml-2"
                   >

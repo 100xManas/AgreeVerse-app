@@ -9,7 +9,7 @@ import CropCard from "../components/CropCard";
 const CoordinatorDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("crops");
-  const { user, setUser } = useContext(AuthContext); // Added setUser
+  const { user, logout } = useContext(AuthContext); // Added setUser
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const CoordinatorDashboard = () => {
     email: "",
     phone: "",
     password: "",
-    role: "farmer" 
+    role: "farmer"
   });
   const [crops, setCrops] = useState([]);
 
@@ -59,28 +59,29 @@ const CoordinatorDashboard = () => {
 
   // const handleLogout = async () => {
   //   try {
-  //     await axios.post(`${API_BASE_URL}/signout`, {}, { withCredentials: true });
-      
-  //     navigate("/login");
+  //     const response = await axios.post(`${API_BASE_URL}/signout`, {}, { withCredentials: true });
+  //     console.log(response.data);
+
+  //     if (response.data.success) {
+  //       navigate("/signin"); 
+  //     } else {
+  //       console.error("Logout failed:", response.data.message);
+  //     }
   //   } catch (error) {
-  //     console.error("Error logging out:", error);
+  //     console.error("Error during logout:", error.response?.data || error.message);
   //   }
   // };
 
+
+
   const handleLogout = async () => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/signout`, {}, { withCredentials: true });
-      console.log(response.data);
-      
-      if (response.data.success) {
-        navigate("/signin"); 
-      } else {
-        console.error("Logout failed:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error during logout:", error.response?.data || error.message);
+    const success = await logout();
+    if (success) {
+      alert("Logged out successfully")
+      navigate("/"); 
     }
   };
+
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -89,7 +90,7 @@ const CoordinatorDashboard = () => {
       email: "",
       phone: "",
       password: "",
-      role: "farmer" 
+      role: "farmer"
     });
   };
 
@@ -99,7 +100,7 @@ const CoordinatorDashboard = () => {
 
   const handleFarmerChange = (e) => {
     const { name, value } = e.target;
-    if (name === "role") return; 
+    if (name === "role") return;
     setFarmerFormData({
       ...farmerFormData,
       [name]: value
@@ -189,7 +190,7 @@ const CoordinatorDashboard = () => {
     if (user?.googleProfilePicture) {
       return user.googleProfilePicture;
     }
-    return "/profile-placeholder.png";
+    return "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
   };
 
   return (

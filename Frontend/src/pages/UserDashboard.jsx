@@ -9,7 +9,7 @@ function UserDashboard() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState('welcome');
 
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -33,6 +33,14 @@ function UserDashboard() {
 
   const handleHomeClick = () => {
     setActiveSection('welcome');
+  };
+
+  const handleLogout = async () => {
+    const success = await logout();
+    if (success) {
+      alert("Logged out successfully")
+      navigate("/"); 
+    }
   };
 
   return (
@@ -68,7 +76,9 @@ function UserDashboard() {
             <p className='text-md text-white '>{user?.email}</p>
             <p className='text-white font-semibold'>Role: {user?.role} </p>
           </div>
-          <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
+          <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
             <LogOut size={20} /> Logout
           </button>
         </header>

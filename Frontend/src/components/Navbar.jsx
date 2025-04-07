@@ -24,8 +24,7 @@ function Navbar() {
     setIsDropdownOpen(false);
   };
 
-  const { user } = useContext(AuthContext);
-  console.log(user);
+  const { user, logout } = useContext(AuthContext);
 
   const handleMouseEnter = () => {
     console.log("Hovered on:", user.name);
@@ -39,6 +38,14 @@ function Navbar() {
   const location = useLocation()
   const currRoute = location.pathname
   console.log(currRoute);
+
+  const handleLogout = async () => {
+    const success = await logout();
+    if (success) {
+      alert("Logged out successfully")
+      navigate("/");
+    }
+  };
 
   return (
     <header className="w-full bg-zinc-700 border-b border-zinc-600 py-4 px-4 md:px-8 flex items-center justify-between flex-wrap gap-4 lg:px-16 lg:flex-nowrap lg:space-x-8">
@@ -150,7 +157,7 @@ function Navbar() {
                 onMouseEnter={() => setShowProfile(true)}
                 onMouseLeave={() => setShowProfile(false)}
               >
-                <img className='w-full h-full object-center' src={user.googleProfilePicture} alt="User" />
+                <img className='w-full h-full object-center' src={user.googleProfilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt="User" />
               </div>
 
               {showProfile && (
@@ -159,7 +166,7 @@ function Navbar() {
                   onMouseEnter={() => setShowProfile(true)}
                   onMouseLeave={() => setShowProfile(false)}
                 >
-                  <UserProfile user={user} />
+                  <UserProfile user={user} onLogout={handleLogout} />
                 </div>
               )}
             </div>

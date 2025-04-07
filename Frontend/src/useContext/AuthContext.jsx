@@ -37,8 +37,30 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const logout = async () => {
+        try {
+            const response = await axios.post("http://localhost:8080/api/v1/signout", {}, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                setUser(null);
+                localStorage.removeItem("user");
+                console.log("Logged out successfully");
+                
+                return true;
+            } else {
+                console.error("Logout failed:", response.data.message);
+                return false
+            }
+        } catch (error) {
+            console.error("Error during logout:", error.response?.data || error.message);
+            return false;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, fetchUserDetails }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, fetchUserDetails, logout }}>
             {children}
         </AuthContext.Provider>
     );

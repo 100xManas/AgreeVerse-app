@@ -6,7 +6,10 @@ import CropCard from "../components/CropCard";
 import axios from "axios";
 
 const AdminDashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+
+  console.log(user);
+
   const [activeSection, setActiveSection] = useState("home");
   const [farmers, setFarmers] = useState([]);
   const [coordinators, setCoordinators] = useState([]);
@@ -121,12 +124,20 @@ const AdminDashboard = () => {
       .catch((err) => console.log("Error deleting crop:", err));
   };
 
+  const handleLogout = async () => {
+    const success = await logout();
+    if (success) {
+      alert("Logged out successfully")
+      navigate("/"); 
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#181a20]">
       {/* Sidebar */}
       <aside className="w-64 bg-[#1e2329] text-white p-5 flex flex-col justify-between">
         <div>
-          <h2 className="text-2xl font-bold capitalize">{user.role} Dashboard</h2>
+          <h2 className="text-2xl font-bold capitalize">Admin Dashboard</h2>
           <nav className="mt-5">
             <ul className="space-y-4">
               <li
@@ -167,7 +178,9 @@ const AdminDashboard = () => {
             </ul>
           </nav>
         </div>
-        <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
+        <button 
+        onClick={handleLogout}
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
           <LogOut size={20} /> Logout
         </button>
       </aside>
@@ -179,7 +192,7 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-md overflow-hidden">
               <img
-                src={user.googleProfilePicture}
+                src={user.googleProfilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                 alt="Profile"
                 className="h-full w-full object-cover"
               />
@@ -189,14 +202,6 @@ const AdminDashboard = () => {
               <p className="text-gray-400">{user.email}</p>
               <p className="text-white font-semibold">Role: {user.role}</p>
             </div>
-          </div>
-          <div className="flex space-x-4">
-            <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2">
-              <Plus size={20} /> Add Farmer
-            </button>
-            <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2">
-              <Plus size={20} /> Add Coordinator
-            </button>
           </div>
         </header>
 
