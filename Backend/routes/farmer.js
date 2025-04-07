@@ -1,4 +1,5 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
 const { z, number } = require('zod')
 const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
@@ -15,7 +16,8 @@ farmerRouter.post('/signup', async (req, res) => {
         email: z.string().email(),
         phone: z.string().transform(data => Number(data)),
         password: z.string().min(6, { message: "Password must be at least 6 characters long." }),
-        coordinatorId: z.string()
+        coordinatorId: z.string(),
+        role: z.string()
     })
 
     const parsedData = userSignupRequiredBody.safeParse(req.body)
@@ -28,15 +30,10 @@ farmerRouter.post('/signup', async (req, res) => {
         });
     }
 
-    console.log(parsedData.data);
-
-
     try {
-        const { name, email, phone, password, coordinatorId } = parsedData.data;
+        const { name, email, phone, password, role, coordinatorId } = parsedData.data;
 
-        const exitingFarmer = await Farmer.findOne({
-            $or: [{ phone }, { email }]
-        })
+        const exitingFarmer = await Farmer.findOne({ email })
 
         if (exitingFarmer) return res.status(409).send("Farmer already exits")
 
@@ -47,6 +44,7 @@ farmerRouter.post('/signup', async (req, res) => {
             email,
             phone,
             password: hash,
+            role,
             coordinatorId
         })
 
@@ -66,10 +64,9 @@ farmerRouter.post('/signup', async (req, res) => {
 farmerRouter.post('/signin', async (req, res) => {
 
     const userSigninRequiredBody = z.object({
-        identifier: z.string().refine((value) => {
-            return /\S+@\S+\.\S+/.test(value) || /^\d{10}$/.test(value);
-        }, { message: "Invalid email or phone number format" }),
-        password: z.string().min(6)
+        email: z.string().email(),
+        password: z.string().min(6),
+        role: z.string()
     });
 
     const parsedData = userSigninRequiredBody.safeParse(req.body)
@@ -79,21 +76,19 @@ farmerRouter.post('/signin', async (req, res) => {
     }
 
     try {
-        const { identifier, password } = parsedData.data;
+        const { email, password, role } = parsedData.data;
 
         // Find farmer by email or phone
-        const farmer = await User.findOne({
-            $or: [{ email: identifier }, { phone: identifier }]
-        })
+        const farmer = await Farmer.findOne({ email, role })
 
-        if (!farmer) return res.status(404).json({ success: false, message: "User not found" });
+        if (!farmer) return res.status(404).json({ success: false, message: "farmer not found" });
 
         // Compare password
-        const comparePassword = await bcrypt.compare(password, user.password);
+        const comparePassword = await bcrypt.compare(password, farmer.password);
         if (!comparePassword) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
         //Generate JWT
-        const token = jwt.sign({ userId: farmer._id }, process.env.JWT_FARMER_SECRET, { expiresIn: "1h" })
+        const token = jwt.sign({ id: farmer._id, role }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         res.cookie("token", token, {
             httpOnly: true,  // Prevents JavaScript access (XSS protection)
