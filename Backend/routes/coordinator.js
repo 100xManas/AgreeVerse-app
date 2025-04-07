@@ -285,7 +285,7 @@ coordinatorRouter.delete('/delete-farmer/:farmerId', coordinatorAuth, async (req
 // Get all crops
 coordinatorRouter.get('/all-crops', coordinatorAuth, async (req, res) => {
     try {
-       
+
         const crops = await cropModel.find({})
 
         res.status(200).json({

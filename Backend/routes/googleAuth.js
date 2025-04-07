@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const passport = require('../strategy/google');
 const googleAuthRouter = express.Router();
 
-// googleAuthRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 // Google OAuth Login
 googleAuthRouter.get('/google', (req, res, next) => {
     const { role, coordinatorId, adminId } = req.query;
@@ -12,7 +10,7 @@ googleAuthRouter.get('/google', (req, res, next) => {
     const state = JSON.stringify({
         role: role || 'user',
         coordinatorId: coordinatorId || null,
-        adminId:adminId || null
+        adminId: adminId || null
     });
 
     passport.authenticate('google', {
@@ -21,66 +19,6 @@ googleAuthRouter.get('/google', (req, res, next) => {
     })(req, res, next);
 });
 
-// Google OAuth Callback
-// googleAuthRouter.get('/google/callback',
-//     passport.authenticate('google', { failureRedirect: 'http://localhost:5173/signin' }),
-//     (req, res) => {
-
-//         const user = req.user;
-//         // console.log('Authenticated User in googleAuth => ', user);
-
-//         const role = user.role;
-
-//         // Generate JWT Token with the correct role
-//         const token = jwt.sign(
-//             {
-//                 id: user._id,
-//                 role: role
-//             },
-//             process.env.JWT_SECRET,
-//             { expiresIn: "1d" }
-//         );
-
-//         // Client URL(Frontend => React)
-//         const CLIENT_URL = "http://localhost:5173"
-
-//         res.cookie('token', token, {
-//             httpOnly: true,
-//             secure: false,
-//             sameSite: 'lax',
-//             maxAge: 24 * 60 * 60 * 1000
-//         }).redirect(`${CLIENT_URL}/auth-success?newUser=true&role=${role}`);
-
-
-//         // if (role === 'admin') return res.cookie('token', token, {
-//         //     httpOnly: true,
-//         //     secure: false,
-//         //     sameSite: 'lax',
-//         //     maxAge: 24 * 60 * 60 * 1000
-//         // }).redirect(`${CLIENT_URL}/auth-success?newUser=true&role=${role}`);
-
-//         // if (role === 'coordinator') return res.cookie('token', token, {
-//         //     httpOnly: true,
-//         //     secure: false,
-//         //     sameSite: 'lax',
-//         //     maxAge: 24 * 60 * 60 * 1000
-//         // }).redirect(`${CLIENT_URL}/auth-success?newUser=true&role=${role}`);
-
-//         // if (role === 'farmer') return res.cookie('token', token, {
-//         //     httpOnly: true,
-//         //     secure: false,
-//         //     sameSite: 'lax',
-//         //     maxAge: 24 * 60 * 60 * 1000
-//         // }).redirect(`${CLIENT_URL}/auth-success?newUser=true&role=${role}`);
-
-//         // if (role === 'user') return res.cookie('token', token, {
-//         //     httpOnly: true,
-//         //     secure: false,
-//         //     sameSite: 'lax',
-//         //     maxAge: 24 * 60 * 60 * 1000
-//         // }).redirect(`${CLIENT_URL}/auth-success?newUser=true&role=${role}`);
-//     }
-// );
 
 googleAuthRouter.get(
     '/google/callback',

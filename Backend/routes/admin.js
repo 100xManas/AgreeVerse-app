@@ -6,38 +6,44 @@ const { Admin, Coordinator, Farmer, cropModel, paymentModel } = require('../mode
 const adminRouter = express.Router()
 const googleAuthRouter = require('./googleAuth');
 const { adminAuth } = require('../middleware/auth');
+const dotenv = require('dotenv')
+
+dotenv.config();
 
 adminRouter.post('/signup', async (req, res) => {
 
     const adminSignupRequiredBody = z.object({
         name: z.string(),
         email: z.string().email(),
-        phoneNo: z.string().transform(data => Number(data)),
-        password: z.string().min(6, { message: "Password must be at least 6 characters long." })
+        phone: z.string().transform(data => Number(data)),
+        password: z.string().min(6, { message: "Password must be at least 6 characters long." }),
+        role: z.string()
     })
 
     const parsedData = adminSignupRequiredBody.safeParse(req.body)
 
     try {
-        const { name, email, phoneNo, password } = parsedData.data;
+        const { name, email, phone, password, role } = parsedData.data;
 
-        const exitingAdmin = await Admin.findOne({ phoneNo, email })
+        const exitingAdmin = await Admin.findOne({ phone, email })
 
         if (exitingAdmin) return res.status(409).send("Admin already exits")
 
         const hash = await bcrypt.hash(password, 10)
 
+
         const newAdmin = await Admin.create({
             name,
             email,
-            phoneNo,
-            password: hash
+            phone,
+            password: hash,
+            role
         })
 
         if (newAdmin) {
             res.status(201).json({
                 success: true,
-                message: "New farmer created successfully"
+                message: "New admin created successfully"
             })
         }
 
@@ -48,12 +54,10 @@ adminRouter.post('/signup', async (req, res) => {
 })
 
 adminRouter.post('/signin', async (req, res) => {
-
     const adminSignupRequiredBody = z.object({
-        identifier: z.string().refine((value) => {
-            return /\S+@\S+\.\S+/.test(value) || /^\d{10}$/.test(value);
-        }, { message: "Invalid email or phone number format" }),
-        password: z.string().min(6)
+        email: z.string().email(),
+        password: z.string().min(6),
+        role: z.string()
     });
 
     const parsedData = adminSignupRequiredBody.safeParse(req.body)
@@ -63,35 +67,35 @@ adminRouter.post('/signin', async (req, res) => {
     }
 
     try {
-        const { identifier, password } = parsedData.data;
+        const { email, password, role } = parsedData.data;
 
-        // Find admin by email or phone
-        const admin = await Admin.findOne({
-            $or: [{ email: identifier }, { phone: identifier }]
-        })
+        const admin = await Admin.findOne({ email, role })
 
-        if (!admin) return res.status(404).json({ success: false, message: "User not found" });
+        if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
 
-        // Compare password
-        const comparePassword = await bcrypt.compare(password, user.password);
+
+        const comparePassword = await bcrypt.compare(password, admin.password);
         if (!comparePassword) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
-        //Generate JWT
-        const token = jwt.sign({ userId: farmer._id }, process.env.JWT_FARMER_SECRET, { expiresIn: "1h" })
+        // Generate JWT
+        const token = jwt.sign({
+            id: admin._id,
+            role
+        }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         res.cookie("token", token, {
             httpOnly: true,  // Prevents JavaScript access (XSS protection)
-            secure: true,    // Works only on HTTPS
+            secure: false,
             sameSite: "lax",
-            maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+            maxAge: 24 * 60 * 60 * 1000,
         }).status(200).json({
             success: true,
-            message: 'Admin signin successfull.'
+            message: 'Admin signin successful.'
         })
 
     } catch (err) {
         console.log(err);
-        res.status(500).send("Internal server crash")
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 })
 
@@ -250,7 +254,7 @@ adminRouter.put('/update-coordinator/:coordinatorId', adminAuth, async (req, res
             });
         }
 
-        const newHash = bcrypt.hash(password, 10)
+        const newHash = await bcrypt.hash(password, 10)
 
         // Update coordinator
         const updatedCoordinator = await Coordinator.findByIdAndUpdate(
@@ -494,19 +498,19 @@ adminRouter.delete('/delete-farmer/:farmerId', adminAuth, async (req, res) => {
 // Get all payments
 adminRouter.get("/payment-status", adminAuth, async (req, res) => {
     try {
-      const payments = await paymentModel.find()
-        .populate("userId", "name") 
-        .sort({ paymentDate: -1 }); 
+        const payments = await paymentModel.find()
+            .populate("userId", "name")
+            .sort({ paymentDate: -1 });
 
-      res.status(200).json({
-        success:true,
-        message:payments.length ? "payments retrived successfully" : "no payment yet",
-        payments
-      });
+        res.status(200).json({
+            success: true,
+            message: payments.length ? "payments retrived successfully" : "no payment yet",
+            payments
+        });
     } catch (err) {
-      console.log("Error fetching payments:", err);
-      res.status(500).json({ message: "Server error" });
+        console.log("Error fetching payments:", err);
+        res.status(500).json({ message: "Server error" });
     }
-  });
+});
 
 module.exports = adminRouter;
