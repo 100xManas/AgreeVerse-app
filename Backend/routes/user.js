@@ -9,7 +9,7 @@ const { User, cropModel, userPurchasedCropModel } = require('../models/db');
 userRouter.post('/signup', async (req, res) => {
 
     const userSignupRequiredBody = z.object({
-        username: z.string(),
+        name: z.string(),
         email: z.string().email(),
         phone: z.string(),
         password: z.string(),
@@ -18,10 +18,10 @@ userRouter.post('/signup', async (req, res) => {
 
     const parsedData = userSignupRequiredBody.safeParse(req.body);
 
-    const { username, email, phone, password, role } = parsedData.data;
+    const { name, email, phone, password, role } = parsedData.data;
 
     try {
-        const existingUser = await User.findOne({ phone, email });
+        const existingUser = await User.findOne({ email });
 
         if (existingUser) {
             return res.status(409).send("User already exists");
@@ -30,7 +30,7 @@ userRouter.post('/signup', async (req, res) => {
         const hash = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
-            name: username,
+            name,
             email,
             phone,
             password: hash,
@@ -52,10 +52,9 @@ userRouter.post('/signup', async (req, res) => {
 userRouter.post('/signin', async (req, res) => {
 
     const userSigninRequiredBody = z.object({
-        identifier: z.string().refine((value) => {
-            return /\S+@\S+\.\S+/.test(value) || /^\d{10}$/.test(value);
-        }, { message: "Invalid email or phone number format" }),
-        password: z.string().min(6)
+        email: z.string().email(),
+        password: z.string().min(6),
+        role:z.string()
     });
 
     const parsedData = userSigninRequiredBody.safeParse(req.body)
@@ -65,12 +64,10 @@ userRouter.post('/signin', async (req, res) => {
     }
 
     try {
-        const { identifier, password } = parsedData.data;
+        const { email, password, role } = parsedData.data;
 
         // Find user by email or phone
-        const user = await User.findOne({
-            $or: [{ email: identifier }, { phone: identifier }]
-        })
+        const user = await User.findOne({email, role})
 
         if (!user) return res.status(400).json({ success: false, message: "User not found" });
 
@@ -79,7 +76,7 @@ userRouter.post('/signin', async (req, res) => {
         if (!comparePassword) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
         //Generate JWT
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_USER_SECRET, { expiresIn: "1h" })
+        const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         res.cookie("token", token, {
             httpOnly: true,  // Prevents JavaScript access (XSS protection)
@@ -88,7 +85,7 @@ userRouter.post('/signin', async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
         }).status(200).json({
             success: true,
-            message: 'User signin successfull with email'
+            message: 'User signin successfull'
         })
 
     } catch (err) {
