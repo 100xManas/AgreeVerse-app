@@ -106,21 +106,21 @@ farmerRouter.post('/signin', async (req, res) => {
     }
 })
 
-farmerRouter.post('/signout', (req, res) => {
-    try {
-        res.cookie("token", "", {
-            httpOnly: true, // Prevents JavaScript from accessing the cookie
-            secure: true,
-            sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
-            expires: new Date(0) // Expire the cookie immediately
-        })
+// farmerRouter.post('/signout', (req, res) => {
+//     try {
+//         res.cookie("token", "", {
+//             httpOnly: true, // Prevents JavaScript from accessing the cookie
+//             secure: true,
+//             sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
+//             expires: new Date(0) // Expire the cookie immediately
+//         })
 
-        res.status(200).json({ success: true, message: "Logged out successfully" });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal server err" });
-    }
-})
+//         res.status(200).json({ success: true, message: "Logged out successfully" });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: "Internal server err" });
+//     }
+// })
 
 farmerRouter.get('/dashboard', farmerAuth, (req, res) => {
     res.json({

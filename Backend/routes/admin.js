@@ -4,7 +4,6 @@ const { z } = require('zod');
 const bcrypt = require('bcrypt');
 const { Admin, Coordinator, Farmer, cropModel, paymentModel } = require('../models/db')
 const adminRouter = express.Router()
-const googleAuthRouter = require('./googleAuth');
 const { adminAuth } = require('../middleware/auth');
 const dotenv = require('dotenv')
 
@@ -99,21 +98,21 @@ adminRouter.post('/signin', async (req, res) => {
     }
 })
 
-adminRouter.post('/signout', (req, res) => {
-    try {
-        res.cookie("token", "", {
-            httpOnly: true, // Prevents JavaScript from accessing the cookie
-            secure: true,
-            sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
-            expires: new Date(0) // Expire the cookie immediately
-        })
+// adminRouter.post('/signout', (req, res) => {
+//     try {
+//         res.cookie("token", "", {
+//             httpOnly: true, // Prevents JavaScript from accessing the cookie
+//             secure: true,
+//             sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
+//             expires: new Date(0) // Expire the cookie immediately
+//         })
 
-        res.status(200).json({ success: true, message: "Logged out successfully" });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal server err" });
-    }
-})
+//         res.status(200).json({ success: true, message: "Logged out successfully" });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: "Internal server err" });
+//     }
+// })
 
 adminRouter.get('/dashboard', adminAuth, (req, res) => {
     res.json({

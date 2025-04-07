@@ -14,12 +14,11 @@ const coordinatorRouter = require('./routes/coordinator');
 const { farmerRouter } = require('./routes/farmer');
 const googleAuthRouter = require('./routes/googleAuth')
 const paymentRouter = require('./routes/payment')
+const { router } = require('./middleware/auth')
 
 const app = express();
 app.use(cookieParser())
 
-
-// app.use(express.json());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }))
 app.use(cors({
@@ -47,6 +46,8 @@ app.use('/api/v1/coordinator', coordinatorRouter)
 app.use('/api/v1/farmer', farmerRouter)
 
 app.use('/api/v1', paymentRouter)
+
+app.use('/api/v1', router)
 
 //connect to mongoDB and start the server
 async function main() {

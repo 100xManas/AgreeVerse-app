@@ -54,7 +54,7 @@ userRouter.post('/signin', async (req, res) => {
     const userSigninRequiredBody = z.object({
         email: z.string().email(),
         password: z.string().min(6),
-        role:z.string()
+        role: z.string()
     });
 
     const parsedData = userSigninRequiredBody.safeParse(req.body)
@@ -67,7 +67,7 @@ userRouter.post('/signin', async (req, res) => {
         const { email, password, role } = parsedData.data;
 
         // Find user by email or phone
-        const user = await User.findOne({email, role})
+        const user = await User.findOne({ email, role })
 
         if (!user) return res.status(400).json({ success: false, message: "User not found" });
 
@@ -94,22 +94,21 @@ userRouter.post('/signin', async (req, res) => {
     }
 })
 
-userRouter.post('/signout', (req, res) => {
-    try {
-        res.cookie("token", "", {
-            httpOnly: true, // Prevents JavaScript from accessing the cookie
-            secure: true,
-            sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
-            expires: new Date(0) // Expire the cookie immediately
-        })
+// userRouter.post('/signout', (req, res) => {
+//     try {
+//         res.cookie("token", "", {
+//             httpOnly: true, // Prevents JavaScript from accessing the cookie
+//             secure: true,
+//             sameSite: "lax", // Send the cookie in same-site requests and some cross-site requests
+//             expires: new Date(0) // Expire the cookie immediately
+//         })
 
-        res.status(200).json({ success: true, message: "Logged out successfully" });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal server err" });
-    }
-})
-
+//         res.status(200).json({ success: true, message: "Logged out successfully" });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: "Internal server err" });
+//     }
+// })
 
 userRouter.get('/dashboard', userAuth, (req, res) => {
     res.json({

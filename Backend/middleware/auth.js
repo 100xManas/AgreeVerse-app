@@ -1,5 +1,7 @@
+const express = require('express')
 const jwt = require('jsonwebtoken');
 const { User, Admin, Coordinator, Farmer } = require('../models/db');
+const router = express.Router()
 
 async function userAuth(req, res, next) {
     try {
@@ -101,9 +103,29 @@ async function farmerAuth(req, res, next) {
     }
 }
 
+router.post('/signout', (req, res) => {
+    try {
+        res.cookie("token", "", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            expires: new Date(0) // Expire the cookie immediately
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server err" });
+    }
+});
+
 module.exports = {
     userAuth,
     adminAuth,
     coordinatorAuth,
-    farmerAuth
+    farmerAuth, 
+    router
 };
