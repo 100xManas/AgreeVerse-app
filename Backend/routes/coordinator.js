@@ -14,26 +14,31 @@ coordinatorRouter.post('/signup', async (req, res) => {
     const coordinatorSignupRequiredBody = z.object({
         name: z.string(),
         email: z.string().email(),
-        phoneNo: z.string().transform(data => Number(data)),
-        password: z.string().min(6, { message: "Password must be at least 6 characters long." })
+        phone: z.string(),
+        password: z.string().min(6, { message: "Password must be at least 6 characters long." }),
+        role: z.string(),
+        adminId: z.string()
     })
 
     const parsedData = coordinatorSignupRequiredBody.safeParse(req.body)
 
-    try {
-        const { name, email, phoneNo, password } = parsedData.data;
 
-        const exitingCoordinator = await Coordinator.findOne({ phoneNo, email })
+    try {
+        const { name, email, phone, password, role, adminId } = parsedData.data;
+
+        const exitingCoordinator = await Coordinator.findOne({ email })
 
         if (exitingCoordinator) return res.status(409).send("Coordinator already exits")
 
-        const hash = await bcrypt.hash(password, 10)
+        const hash = await bcrypt.hash(password, 12)
 
         const newCoordinator = await Coordinator.create({
             name,
             email,
-            phoneNo,
-            password: hash
+            phone,
+            password: hash,
+            role,
+            adminId
         })
 
         if (newCoordinator) {
@@ -52,10 +57,9 @@ coordinatorRouter.post('/signup', async (req, res) => {
 coordinatorRouter.post('/signin', async (req, res) => {
 
     const coordinatorSignupRequiredBody = z.object({
-        identifier: z.string().refine((value) => {
-            return /\S+@\S+\.\S+/.test(value) || /^\d{10}$/.test(value);
-        }, { message: "Invalid email or phone number format" }),
-        password: z.string().min(6)
+        email: z.string().email(),
+        password: z.string().min(6),
+        role: z.string()
     });
 
     const parsedData = coordinatorSignupRequiredBody.safeParse(req.body)
@@ -65,21 +69,19 @@ coordinatorRouter.post('/signin', async (req, res) => {
     }
 
     try {
-        const { identifier, password } = parsedData.data;
+        const { email, password, role } = parsedData.data;
 
-        // Find Coordinator by email or phone
-        const coordinator = await Coordinator.findOne({
-            $or: [{ email: identifier }, { phone: identifier }]
-        })
+        // Find Coordinator 
+        const coordinator = await Coordinator.findOne({ email, role })
 
-        if (!coordinator) return res.status(404).json({ success: false, message: "User not found" });
+        if (!coordinator) return res.status(404).json({ success: false, message: "Coordinator not found" });
 
         // Compare password
         const comparePassword = await bcrypt.compare(password, coordinator.password);
         if (!comparePassword) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
         //Generate JWT
-        const token = jwt.sign({ userId: Coordinator._id }, process.env.JWT_COORDINATOR_SECRET, { expiresIn: "1h" })
+        const token = jwt.sign({ id: coordinator._id, role }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         res.cookie("token", token, {
             httpOnly: true,  // Prevents JavaScript access (XSS protection)
