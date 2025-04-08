@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, MoveRight } from 'lucide-react';
 import UserProfile from './UserProfile';
 import { AuthContext } from '../useContext/AuthContext';
@@ -10,6 +10,8 @@ function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+  const navigate = useNavigate()
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -37,7 +39,7 @@ function Navbar() {
 
   const location = useLocation()
   const currRoute = location.pathname
-  console.log(currRoute);
+  // console.log(currRoute);
 
   const handleLogout = async () => {
     const success = await logout();

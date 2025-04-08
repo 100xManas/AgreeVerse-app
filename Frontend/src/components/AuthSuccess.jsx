@@ -16,7 +16,7 @@ function AuthSuccess() {
             const handleAuthSuccess = async () => {
                 try {
                     await fetchUserDetails(role); 
-                    console.log("User data fetched:", user);
+                    // console.log("User data fetched:", user);
 
                     if (user?.role === "user") {
                         navigate(`/${user.role}/home`);
