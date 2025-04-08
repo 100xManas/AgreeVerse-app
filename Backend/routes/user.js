@@ -122,12 +122,37 @@ userRouter.get('/dashboard', userAuth, (req, res) => {
 userRouter.get('/previewcrop', async (req, res) => {
     try {
         const crops = await cropModel.find({})
+        // console.log(crops); 
         res.status(200).json({ success: true, message: "Crops retrieved successfully", crops })
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Internal server err" });
     }
 })
+
+userRouter.get('/product/:productId', async (req, res) => {
+    const { productId } = req.params;
+
+    try {
+        const product = await cropModel.findOne({ _id: productId });
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            product,
+        });
+    } catch (err) {
+        console.error('Error retrieving product:', err);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+});
+
 
 // purchase a crop by the user.
 userRouter.post('/purchase-crop', userAuth, async (req, res) => {

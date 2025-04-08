@@ -9,28 +9,26 @@ const razorpayInstance = createRazorpayInstance()
 
 // only order the payment 
 const createOrder = async (req, res) => {
-
+    
     // => Always fetch price from DB.
 
     try {
-        const { userId, cropId, quantity } = req.body;
+        const { userId, productId, quantity, paymentMethod } = req.body;        
 
-        if (!userId || !cropId || !quantity) {
+        if (!userId || !productId || !quantity) {
             return res.status(400).json({
                 success: false,
-                message: "All fields (userId, cropId, quantity) are required.",
+                message: "All fields (userId, productId, quantity) are required.",
             });
         }
 
         // Fetch crop price from DB
-        const crop = await cropModel.findById(cropId);
+        const crop = await cropModel.findById(productId);
         if (!crop) {
             return res.status(404).json({ success: false, message: "Crop not found" });
         }
 
         const totalAmount = crop.price * quantity;
-
-        console.log(totalAmount);
 
         // Create order
         const options = {
@@ -45,7 +43,7 @@ const createOrder = async (req, res) => {
         const newPayment = await paymentModel.create({
             userId,
             paymentId: order.id,
-            paymentMethod: "",
+            paymentMethod,
             amount: totalAmount,
             paymentStatus: "pending",
         })
@@ -65,14 +63,13 @@ const createOrder = async (req, res) => {
     }
 }
 
-
 // make payment
 const verifyPayment = async (req, res) => {
 
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, cropId, quantity, deliveryAddress, paymentMethod, email } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, productId, quantity, deliveryAddress, paymentMethod, email } = req.body;
 
-        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !userId || !cropId || !quantity || !deliveryAddress) {
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !userId || !productId || !quantity || !deliveryAddress) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required for payment verification.",
@@ -127,7 +124,7 @@ const verifyPayment = async (req, res) => {
 
         await userPurchasedCropModel.create({
             user: userId,
-            purchasedCrops: [cropId],
+            purchasedCrops: [productId],
             quantity,
             payment: payment._id,
             totalAmount: payment.amount,
