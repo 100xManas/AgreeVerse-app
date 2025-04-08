@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Loading from "../components/Loading";
 import { CircleArrowRight, CircleArrowLeft, Truck } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../useContext/AuthContext";
 
@@ -24,6 +24,7 @@ const ProductDetailsAndPayment = () => {
     const { productId } = useParams();
 
     const { user } = useContext(AuthContext)
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -118,8 +119,17 @@ const ProductDetailsAndPayment = () => {
                         .then(response => {
                             if (response.data.success) {
                                 alert("Payment successful! You'll receive a confirmation email shortly.");
-                                // Redirect to orders page or success page
-                                window.location.href = "/payment-success";
+                               
+                                // Redirect to  success page
+                                navigate('/payment-success', {
+                                    state: {
+                                        orderId: response.razorpay_order_id,
+                                        paymentId: response.razorpay_payment_id,
+                                        paymentMethod,
+                                        amount: order.amount,
+                                      }
+                                })
+                               
                             } else {
                                 alert("Payment verification failed: " + response.data.message);
                             }
