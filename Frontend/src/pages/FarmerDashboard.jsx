@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { Home, Sprout, LogOut, Plus, X, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import CropCard from '../components/CropCard';
 import { AuthContext } from '../useContext/AuthContext';
 
@@ -254,9 +255,9 @@ function FarmerDashboard() {
           <h1 className="text-2xl font-bold">Farmer Dashboard</h1>
           <nav className="mt-5">
             <ul className="space-y-4">
-              <li className="hover:text-orange-400 hover:bg-zinc-700 transition py-2 px-4 rounded cursor-pointer flex items-center gap-2">
+              <Link to={'/user/home'} className="hover:text-orange-400 hover:bg-zinc-700 transition py-2 px-4 rounded cursor-pointer flex items-center gap-2">
                 <Home size={20} /> Home
-              </li>
+              </Link>
               <li className="bg-zinc-700 p-2 rounded cursor-pointer flex items-center gap-2">
                 <Sprout size={20} /> Crops
               </li>

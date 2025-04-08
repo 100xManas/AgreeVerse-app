@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Loading from "../components/Loading";
 import { CircleArrowRight, CircleArrowLeft, Truck } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../useContext/AuthContext";
 
 const ProductDetailsAndPayment = () => {
     const [product, setProduct] = useState(null);
@@ -16,18 +17,20 @@ const ProductDetailsAndPayment = () => {
         zip: "",
         country: "",
     });
-    const [userId, setUserId] = useState(""); // You'll need to get this from your auth system
+    const [userId, setUserId] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [paymentMethod, setPaymentMethod] = useState("razorpay");
 
     const { productId } = useParams();
+
+    const { user } = useContext(AuthContext)
 
     useEffect(() => {
         const fetchProduct = async () => {
             try {
                 setLoading(true);
                 const response = await fetch(
-                    `https://fakestoreapi.com/products/${productId}`
+                    `http://localhost:8080/api/v1/user/product/${productId}`
                 );
 
                 if (!response.ok) {
@@ -35,13 +38,10 @@ const ProductDetailsAndPayment = () => {
                 }
 
                 const data = await response.json();
-                setProduct(data);
+                console.log("Fetched product data:", data.product);
+                setProduct(data.product);
+
                 setError(null);
-                
-                // You might want to fetch the user ID here if you have an auth system
-                // For example:
-                // const userData = await fetchUserData();
-                // setUserId(userData.id);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -51,6 +51,12 @@ const ProductDetailsAndPayment = () => {
 
         fetchProduct();
     }, [productId]);
+
+    useEffect(() => {
+        if (user && user._id) {
+            setUserId(user._id);
+        }
+    }, [user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -66,7 +72,7 @@ const ProductDetailsAndPayment = () => {
 
     const SubmitAndCheckoutHandler = async (e) => {
         e.preventDefault();
-        
+
         if (!userId) {
             alert("Please log in to continue with the purchase");
             return;
@@ -77,14 +83,15 @@ const ProductDetailsAndPayment = () => {
                 price: product.price * quantity,
                 productId: productId,
                 userId: userId,
-                quantity: quantity
+                quantity: quantity,
+                paymentMethod
             });
 
             const options = {
-                key: import.meta.env.RAZORPAY_KEY_ID,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: "INR",
-                name: "AgreeVerse app",
+                name: "AgreeVerse App",
                 description: "Test Transaction",
                 image: "",
                 order_id: order.id,
@@ -92,7 +99,7 @@ const ProductDetailsAndPayment = () => {
                     // Updated to match your backend verification requirements
                     axios.post('http://localhost:8080/api/v1/verifyPayment', {
                         razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_order_id: response.razorpay_order_id,      
+                        razorpay_order_id: response.razorpay_order_id,
                         razorpay_signature: response.razorpay_signature,
                         userId: userId,
                         cropId: productId, // Assuming product ID is the same as crop ID
@@ -112,7 +119,7 @@ const ProductDetailsAndPayment = () => {
                             if (response.data.success) {
                                 alert("Payment successful! You'll receive a confirmation email shortly.");
                                 // Redirect to orders page or success page
-                                // window.location.href = "/orders";
+                                window.location.href = "/payment-success";
                             } else {
                                 alert("Payment verification failed: " + response.data.message);
                             }
@@ -125,9 +132,9 @@ const ProductDetailsAndPayment = () => {
 
                 // login user details
                 "prefill": {
-                    "name": "100xManas",
-                    "email": "manasranjansahoo971@gmail.com",
-                    "contact": "9000090000"
+                    "name": user.name || "100xManas",
+                    "email": user.email || "manasranjansahoo971@gmail.com",
+                    "contact": "7848965736"
                 },
                 notes: {
                     "address": "Razorpay Corporate Office"
@@ -180,7 +187,7 @@ const ProductDetailsAndPayment = () => {
                         <div className="flex items-center justify-center ">
                             <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-4 h-72 w-full">
                                 <img
-                                    src={product.image}
+                                    src={product.imageURL}
                                     alt={product.title}
                                     className="max-h-52 max-w-full object-contain transition-transform hover:scale-105"
                                 />
@@ -191,8 +198,8 @@ const ProductDetailsAndPayment = () => {
                         <div className="flex flex-col h-full">
                             <div className="flex-grow">
                                 <div className="flex items-center mb-2">
-                                    <span className="bg-zinc-700 text-white text-xs px-2 py-1 rounded-full mr-2">
-                                        {product.category}
+                                    <span className="bg-zinc-700 capitalize text-white text-xs px-2.5 py-1.5 rounded-full mr-2">
+                                        {product.tag}
                                     </span>
                                 </div>
 

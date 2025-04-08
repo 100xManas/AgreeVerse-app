@@ -1,11 +1,12 @@
 import React from 'react';
 
 const ProductCard = ({ product }) => {
+  
   return (
     <div className="w-60 hover:cursor-pointer text-white my-4 rounded-xl bg-[#1e2329] border border-gray-700 shadow-sm overflow-hidden">
 
       <div className='relative'>
-        <img src={product.image} alt={product.title} className='w-full h-48 object-cover hover:scale-105 duration-250 transition ease-in' />
+        <img src={product.imageURL} alt={product.title} className='w-full h-48 object-cover hover:scale-105 duration-250 transition ease-in' />
       </div>
 
       {/* Product Details */}
@@ -15,7 +16,7 @@ const ProductCard = ({ product }) => {
         <h3 className="font-bold text-lg mb-0.5 line-clamp-1">{product.title}</h3>
 
         {/* Quantity */}
-        <p className="text-gray-600 mb-4">{product.quantity}</p>
+        <p className="text-gray-400 mb-4">{product.description}</p>
 
         {/* Price */}
         <div className="text-sm ml-2">

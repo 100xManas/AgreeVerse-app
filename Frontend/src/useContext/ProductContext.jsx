@@ -5,13 +5,19 @@ export const ProductContext = createContext();
 
 const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const getProducts = async () => {
+        setLoading(true);
         try {
-            const { data } = await axios.get("https://fakestoreapi.com/products");
-            setProducts(data);
+            const { data } = await axios.get("http://localhost:8080/api/v1/user/previewcrop");
+            // console.log(data);
+            setProducts(data.crops);
         } catch (err) {
             console.error("Error fetching products:", err);
+            setProducts([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -20,10 +26,10 @@ const ProductProvider = ({ children }) => {
     }, []);
 
     return (
-        <ProductContext.Provider value={[products, setProducts]}>
+        <ProductContext.Provider value={[products, setProducts, loading, getProducts]}>
             {children}
         </ProductContext.Provider>
     );
 };
 
-export default ProductProvider
+export default ProductProvider;
