@@ -107,12 +107,12 @@ function Navbar() {
         {/* Signup and Signin Links (Visible on Mobile/Tablet) */}
         <div className='border-b border-b-[#F0B90B] py-2 lg:hidden'>
           <a href="" className='flex items-center justify-between px-4 py-1 text-white'>
-            <span className='font-semibold text-sm'>Signup</span>
+            <span className='font-semibold text-sm'>Sign up</span>
             <MoveRight />
           </a>
 
           <a href="" className='flex mt-1 items-center justify-between px-4 py-1 text-white'>
-            <span className='font-semibold text-sm'>Signin</span>
+            <span className='font-semibold text-sm'>Sign in</span>
             <MoveRight />
           </a>
         </div>

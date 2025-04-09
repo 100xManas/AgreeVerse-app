@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { Home, Sprout, LogOut, Plus, X, Upload } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CropCard from '../components/CropCard';
 import { AuthContext } from '../useContext/AuthContext';
 
@@ -25,6 +25,8 @@ function FarmerDashboard() {
   const errorTimeoutRef = useRef(null);
 
   const { user, logout } = useContext(AuthContext);
+
+  const navigate = useNavigate()
 
   // Auto-dismiss error messages after 5 seconds
   useEffect(() => {

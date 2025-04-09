@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Carousel from '../components/Carousel';
@@ -7,6 +7,8 @@ import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 import { ProductContext } from '../useContext/productContext';
 import HowItWorks from '../components/HowItWork';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import fruitImage from "../assets/fruits.png";
 import vegetablesImage from "../assets/vegetables.png";
@@ -16,10 +18,27 @@ import Loading from '../components/Loading';
 function Home() {
   const [products, setProducts, loading, getProducts] = useContext(ProductContext);
 
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-    console.log(`Selected category: ${category}`);
-  };
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const verify = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/v1/verify", { withCredentials: true });
+
+        const role = res.data.role
+
+        // redirect based on role
+        if (role === "admin") navigate("/admin/dashboard");
+        else if (role === "coordinator") navigate("/coordinator/dashboard");
+        else if (role === "farmer") navigate("/farmer/dashboard");
+        else if (role === "user") navigate("/user/home");
+      } catch (error) {
+        alert("User not logged")
+      }
+    }
+
+    verify()
+  }, [navigate])
 
   return (
     <div className='w-full bg-[#181a20]'>
