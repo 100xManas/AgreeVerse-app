@@ -122,10 +122,31 @@ router.post('/signout', (req, res) => {
     }
 });
 
+router.get("/verify", async (req, res) => {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).json({
+        success: false,
+        message: "No token found"
+    })
+
+    try {
+        const decodedData = jwt.verify(token, process.env.JWT_SECRET)
+        res.status(200).json({ 
+            success:true,
+            message:"User Found",
+            role: decodedData.role
+         });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Server crash" });
+    }
+})
+
 module.exports = {
     userAuth,
     adminAuth,
     coordinatorAuth,
-    farmerAuth, 
+    farmerAuth,
     router
 };
