@@ -257,9 +257,13 @@ function FarmerDashboard() {
           <h1 className="text-2xl font-bold">Farmer Dashboard</h1>
           <nav className="mt-5">
             <ul className="space-y-4">
-              <Link to={'/user/home'} className="hover:text-orange-400 hover:bg-zinc-700 transition py-2 px-4 rounded cursor-pointer flex items-center gap-2">
+              <li onClick={()=> {
+                console.log("navigate");
+                
+                navigate('/user/home')
+                }} className="hover:text-orange-400 hover:bg-zinc-700 transition py-2 px-4 rounded cursor-pointer flex items-center gap-2">
                 <Home size={20} /> Home
-              </Link>
+              </li>
               <li className="bg-zinc-700 p-2 rounded cursor-pointer flex items-center gap-2">
                 <Sprout size={20} /> Crops
               </li>

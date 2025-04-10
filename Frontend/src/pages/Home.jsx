@@ -9,11 +9,12 @@ import { ProductContext } from '../useContext/productContext';
 import HowItWorks from '../components/HowItWork';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../components/Loading';
 
 import fruitImage from "../assets/fruits.png";
 import vegetablesImage from "../assets/vegetables.png";
 import grainsImage from "../assets/grains.png";
-import Loading from '../components/Loading';
+import agreeAppBanner from "../assets/agreeApp-banner.png"
 
 function Home() {
   const [products, setProducts, loading, getProducts] = useContext(ProductContext);
@@ -37,16 +38,20 @@ function Home() {
       }
     }
 
-    verify()
-  }, [navigate])
+    // verify()
+  }, [])
 
   return (
     <div className='w-full bg-[#181a20]'>
       <Navbar />
       <main className='mx-auto w-[97vw]'>
-        <Carousel />
+        {/* <Carousel /> */}
 
-        <div className='flex justify-between items-center py-10 mx-16'>
+        <div className='relative w-[94vw] h-[21vw] mx-auto my-6 rounded-t-xl rounded-bl-xl overflow-hidden'>
+          <img src={agreeAppBanner} alt="" className='w-full h-full object-cover' />
+        </div>
+
+        <div className='flex justify-between items-center py-10 mx-12'>
           <Card bgColor={"bg-green-200"} title={"Vegetables"} cropImage={vegetablesImage} />
           <Card bgColor={"bg-orange-200"} title={"Fruits"} cropImage={fruitImage} />
           <Card bgColor={"bg-yellow-200"} title={"grains"} cropImage={grainsImage} />
