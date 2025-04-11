@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Carousel from '../components/Carousel';
@@ -20,6 +20,12 @@ function Home() {
   const [products, setProducts, loading, getProducts] = useContext(ProductContext);
 
   const navigate = useNavigate();
+
+  const productSectionRef = useRef(null);
+
+  const handleCardClick = () => {
+    productSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const verify = async () => {
@@ -52,12 +58,20 @@ function Home() {
         </div>
 
         <div className='flex justify-between items-center py-10 mx-12'>
-          <Card bgColor={"bg-green-200"} title={"Vegetables"} cropImage={vegetablesImage} />
-          <Card bgColor={"bg-orange-200"} title={"Fruits"} cropImage={fruitImage} />
-          <Card bgColor={"bg-yellow-200"} title={"grains"} cropImage={grainsImage} />
+          <div className='flex justify-between items-center gap-20 flex-wrap ml-10 py-4'>
+            <div onClick={handleCardClick}>
+              <Card bgColor={"bg-green-200"} title={"Vegetables"} cropImage={vegetablesImage} />
+            </div>
+            <div onClick={handleCardClick}>
+              <Card bgColor={"bg-orange-200"} title={"Fruits"} cropImage={fruitImage} />
+            </div>
+            <div onClick={handleCardClick}>
+              <Card bgColor={"bg-yellow-200"} title={"grains"} cropImage={grainsImage} />
+            </div>
+          </div>
         </div>
 
-        <div className='bg-[#1e2329] mt-8 pb-20'>
+        <div ref={productSectionRef} className='bg-[#1e2329] mt-8 pb-20'>
           <div className="flex justify-between items-center px-10">
             <h2 className='text-3xl text-white font-semibold py-8'>All Our Products</h2>
             <button

@@ -12,7 +12,7 @@ const UserCard = ({ user, onDelete }) => {
         <User className="w-8 h-8 text-gray-600" />
       </div>
       <div className="flex-1">
-        <h2 className="text-lg font-semibold">{user.name}</h2>
+        <h2 className="text-lg text-white font-semibold">{user.name}</h2>
         <p className="text-sm text-gray-500">{user.email}</p>
         <p className="text-sm text-white font-medium">Role: {user.role}</p>
       </div>
