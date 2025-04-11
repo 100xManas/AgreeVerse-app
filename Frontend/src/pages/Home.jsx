@@ -30,7 +30,7 @@ function Home() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/v1/verify", { withCredentials: true });
+        const res = await axios.get("https://agreeverse-app.onrender.com/api/v1/verify", { withCredentials: true });
 
         const role = res.data.role
 

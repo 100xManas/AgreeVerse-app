@@ -31,7 +31,7 @@ const ProductDetailsAndPayment = () => {
             try {
                 setLoading(true);
                 const response = await fetch(
-                    `http://localhost:8080/api/v1/user/product/${productId}`
+                    `https://agreeverse-app.onrender.com/api/v1/user/product/${productId}`
                 );
 
                 if (!response.ok) {
@@ -80,7 +80,7 @@ const ProductDetailsAndPayment = () => {
         }
 
         try {
-            const { data: { order } } = await axios.post('http://localhost:8080/api/v1/createOrder', {
+            const { data: { order } } = await axios.post('https://agreeverse-app.onrender.com/api/v1/createOrder', {
                 price: product.price * quantity,
                 productId: productId,
                 userId: userId,
@@ -98,7 +98,7 @@ const ProductDetailsAndPayment = () => {
                 order_id: order.id,
                 handler: function (response) {
                     // Updated to match your backend verification requirements
-                    axios.post('http://localhost:8080/api/v1/verifyPayment', {
+                    axios.post('https://agreeverse-app.onrender.com/api/v1/verifyPayment', {
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_signature: response.razorpay_signature,

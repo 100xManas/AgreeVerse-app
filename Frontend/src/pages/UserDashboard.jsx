@@ -16,7 +16,7 @@ function UserDashboard() {
     setActiveSection('orders');
 
     try {
-      const res = await axios.get(`http://localhost:8080/api/v1/user/user-purchases/${user._id}`, {
+      const res = await axios.get(`https://agreeverse-app.onrender.com/api/v1/user/user-purchases/${user._id}`, {
         withCredentials: true
       });
 

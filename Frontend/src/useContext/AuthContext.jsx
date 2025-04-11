@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const response = await axios.get(`http://localhost:8080/api/v1/${role}/dashboard`, {
+            const response = await axios.get(`https://agreeverse-app.onrender.com/api/v1/${role}/dashboard`, {
                 withCredentials: true,
             });
 
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            const response = await axios.post("http://localhost:8080/api/v1/signout", {}, {
+            const response = await axios.post("https://agreeverse-app.onrender.com/api/v1/signout", {}, {
                 withCredentials: true,
             });
 

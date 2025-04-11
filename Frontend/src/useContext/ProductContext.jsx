@@ -10,7 +10,7 @@ const ProductProvider = ({ children }) => {
     const getProducts = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get("http://localhost:8080/api/v1/user/previewcrop");
+            const { data } = await axios.get("https://agreeverse-app.onrender.com/api/v1/user/previewcrop");
             // console.log(data);
             setProducts(data.crops);
         } catch (err) {
