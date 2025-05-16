@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Carousel from '../components/Carousel';
 import Card from '../components/Card';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
@@ -30,7 +29,7 @@ function Home() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const res = await axios.get("https://agreeverse-app.onrender.com/api/v1/verify", { withCredentials: true });
+        const res = await axios.get("http://agreeverse-app-deployement.onrender.com/api/v1/verify", { withCredentials: true });
 
         const role = res.data.role
 

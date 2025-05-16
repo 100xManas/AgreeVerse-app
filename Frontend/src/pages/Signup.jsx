@@ -65,7 +65,7 @@ export default function Signup() {
     const proceedWithSignup = async (selectedRole) => {
         if (googleSignup) {
             // Redirect for Google OAuth with role and IDs (if applicable)
-            let redirectUrl = `https://agreeverse-app.onrender.com/auth/google?role=${selectedRole}`;
+            let redirectUrl = `http://agreeverse-app-deployement.onrender.com/auth/google?role=${selectedRole}`;
 
             if (selectedRole === 'farmer') {
                 redirectUrl += `&coordinatorId=${coordinatorId}`;
@@ -87,7 +87,7 @@ export default function Signup() {
             };
 
             try {
-                const res = await axios.post(`https://agreeverse-app.onrender.com/api/v1/${selectedRole}/signup`, newUser);
+                const res = await axios.post(`http://agreeverse-app-deployement.onrender.com/api/v1/${selectedRole}/signup`, newUser);
                 if (res.data.success) {
                     alert(res.data.message);
 

@@ -54,7 +54,7 @@ function FarmerDashboard() {
   useEffect(() => {
     const fetchCropByFarmer = async () => {
       try {
-        const response = await axios.get('https://agreeverse-app.onrender.com/api/v1/farmer/preview-crops', { withCredentials: true });
+        const response = await axios.get('http://agreeverse-app-deployement.onrender.com/api/v1/farmer/preview-crops', { withCredentials: true });
         setCrops(response.data.crops);
       } catch (error) {
         console.error('Error fetching crops:', error);
@@ -97,7 +97,7 @@ function FarmerDashboard() {
 
   const handleDelete = async (cropId) => {
     try {
-      const response = await axios.delete(`https://agreeverse-app.onrender.com/api/v1/farmer/delete-crop/${cropId}`, { withCredentials: true });
+      const response = await axios.delete(`http://agreeverse-app-deployement.onrender.com/api/v1/farmer/delete-crop/${cropId}`, { withCredentials: true });
       if (response.data.success) {
         setCrops(crops.filter(c => c._id !== cropId));
         alert('Crop deleted successfully');
@@ -186,14 +186,14 @@ function FarmerDashboard() {
       if (selectedCrop) {
         // Update existing crop
         response = await axios.put(
-          `https://agreeverse-app.onrender.com/api/v1/farmer/update-crop/${selectedCrop._id}`,
+          `http://agreeverse-app-deployement.onrender.com/api/v1/farmer/update-crop/${selectedCrop._id}`,
           cropData,
           { withCredentials: true }
         );
       } else {
         // Create new crop
         response = await axios.post(
-          'https://agreeverse-app.onrender.com/api/v1/farmer/add-crop',
+          'http://agreeverse-app-deployement.onrender.com/api/v1/farmer/add-crop',
           cropData,
           { withCredentials: true }
         );
@@ -216,7 +216,7 @@ function FarmerDashboard() {
         setSelectedFile(null);
 
         // Refresh crops list
-        const updateResponse = await axios.get('https://agreeverse-app.onrender.com/api/v1/farmer/preview-crops', { withCredentials: true });
+        const updateResponse = await axios.get('http://agreeverse-app-deployement.onrender.com/api/v1/farmer/preview-crops', { withCredentials: true });
         setCrops(updateResponse.data.crops);
       } else {
         setError(response.data.message || 'Failed to save crop');

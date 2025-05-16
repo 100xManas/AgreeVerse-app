@@ -47,7 +47,7 @@ export default function Signin() {
                 setLoading(true);
                 setError('');
 
-                const response = await axios.post(`https://agreeverse-app.onrender.com/api/v1/${role}/signin`, {
+                const response = await axios.post(`http://agreeverse-app-deployement.onrender.com/api/v1/${role}/signin`, {
                     email,
                     password,
                     role
@@ -69,7 +69,7 @@ export default function Signin() {
                 setShowRoleModal(false);
             }
         } else if (authType === 'google') {
-            window.location.href = `https://agreeverse-app.onrender.com/auth/google?role=${role}`;
+            window.location.href = `http://agreeverse-app-deployement.onrender.com/auth/google?role=${role}`;
         }
     };
 

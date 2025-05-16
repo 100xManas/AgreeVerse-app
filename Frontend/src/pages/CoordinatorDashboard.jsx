@@ -23,7 +23,7 @@ const CoordinatorDashboard = () => {
   });
   const [crops, setCrops] = useState([]);
 
-  const API_BASE_URL = "https://agreeverse-app.onrender.com/api/v1/coordinator";
+  const API_BASE_URL = "http://agreeverse-app-deployement.onrender.com/api/v1/coordinator";
 
   useEffect(() => {
     fetchCrops();

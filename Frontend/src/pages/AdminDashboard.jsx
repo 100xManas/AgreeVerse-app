@@ -24,7 +24,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setActiveSection("farmers");
     axios
-      .get("https://agreeverse-app.onrender.com//api/v1/admin/get-farmers", axiosConfig)
+      .get("http://agreeverse-app-deployement.onrender.com//api/v1/admin/get-farmers", axiosConfig)
       .then((response) => {
         setFarmers(response.data.farmers);
         setLoading(false);
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setActiveSection("coordinators");
     axios
-      .get("https://agreeverse-app.onrender.com//api/v1/admin/get-coordinators", axiosConfig)
+      .get("http://agreeverse-app-deployement.onrender.com//api/v1/admin/get-coordinators", axiosConfig)
       .then((response) => {
         setCoordinators(response.data.coordinators);
         setLoading(false);
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setActiveSection("crops");
     axios
-      .get("https://agreeverse-app.onrender.com//api/v1/admin/get-crops", axiosConfig)
+      .get("http://agreeverse-app-deployement.onrender.com//api/v1/admin/get-crops", axiosConfig)
       .then((response) => {
         setCrops(response.data.crops);
         setLoading(false);
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setActiveSection("payments");
     axios
-      .get("https://agreeverse-app.onrender.com//api/v1/admin/payment-status", axiosConfig)
+      .get("http://agreeverse-app-deployement.onrender.com//api/v1/admin/payment-status", axiosConfig)
       .then((response) => {
         setPayments(response.data.data.payments);
         setLoading(false);
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
   // Delete a farmer 
   const deleteFarmer = (farmerId) => {
     axios
-      .delete(`https://agreeverse-app.onrender.com/api/v1/admin/delete-farmer/${farmerId}`, axiosConfig)
+      .delete(`http://agreeverse-app-deployement.onrender.com/api/v1/admin/delete-farmer/${farmerId}`, axiosConfig)
       .then(() => {
         setFarmers(farmers.filter((f) => f._id !== farmerId));
       })
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
   // Delete a coordinator
   const deleteCoordinator = (coordinatorId) => {
     axios
-      .delete(`https://agreeverse-app.onrender.com/api/v1/admin/delete-coordinator/${coordinatorId}`, axiosConfig)
+      .delete(`http://agreeverse-app-deployement.onrender.com/api/v1/admin/delete-coordinator/${coordinatorId}`, axiosConfig)
       .then(() => {
         setCoordinators(coordinators.filter((c) => c._id !== coordinatorId));
       })
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
   // Delete a crop
   const deleteCrop = (cropId) => {
     axios
-      .delete(`https://agreeverse-app.onrender.com/api/v1/admin/delete-crop/${cropId}`, axiosConfig)
+      .delete(`http://agreeverse-app-deployement.onrender.com/api/v1/admin/delete-crop/${cropId}`, axiosConfig)
       .then(() => setCrops(crops.filter((c) => c._id !== cropId)))
       .catch((err) => console.log("Error deleting crop:", err));
   };
